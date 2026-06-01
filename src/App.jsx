@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Dashboard from './components/Dashboard'
 import Settings from './components/Settings'
 
-// 1. LLAVE VAPID PÚBLICA (Pega aquí la tuya exacta del archivo .env del backend)
+
 const VAPID_PUBLIC_KEY = 'BACohSw7fpHNV7IzTnao5M2TmdGl2IYm2d1UqcgyVhSKAVl-MBBK5UmznSQsA16jBVEtZtsjCykG3jXqY_4MfVI';
 
 // Función auxiliar nativa para transformar la llave VAPID y que el navegador la entienda
@@ -21,7 +21,7 @@ function App() {
   // Estado para controlar qué pantalla vemos
   const [currentView, setCurrentView] = useState('dashboard')
 
-  // 2. LÓGICA PARA SOLICITAR PERMISO Y GUARDAR EN MONGO
+  //LÓGICA PARA SOLICITAR PERMISO Y GUARDAR EN MONGO
   const suscribirUsuario = async () => {
     try {
       // A. Pedir permiso nativo al usuario
@@ -42,7 +42,7 @@ function App() {
 
       console.log('Suscripción generada en el navegador:', suscripcion);
 
-      // D. Enviar el JSON directo a tu backend en Node (Puerto 3000)
+      // Enviar el JSON directo al backend en Node (Puerto 3000)
       const respuesta = await fetch('http://localhost:3000/subscribe', {
         method: 'POST',
         body: JSON.stringify(suscripcion),
