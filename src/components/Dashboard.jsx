@@ -4,11 +4,11 @@ export default function Dashboard() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [isActive, setIsActive] = useState(false)
   const [history, setHistory] = useState([])
-  
-  // Modificado: Ahora recuerda si se quedó en la pantalla de resumen al recargar
-  const [showSummary, setShowSummary] = useState(() => {
-    return localStorage.getItem('mostrar_resumen') === 'true'
-  })
+
+  // 🚀 NUEVO: Comprobamos en el localStorage si la fiesta ya había terminado al abrir la app
+  const [showSummary, setShowSummary] = useState(
+    localStorage.getItem('fiesta_terminada') === 'true'
+  )
 
   // 1. Cargar el historial y calcular el tiempo al arrancar
   useEffect(() => {
@@ -31,19 +31,16 @@ export default function Dashboard() {
         setTimeLeft(0)
         setIsActive(false)
         localStorage.removeItem('hora_objetivo')
-
-        // Disparar la notificación local cuando el contador llega a cero
         lanzarNotificacionViaLibre()
       }
     }
   }
 
-  // Función para disparar la alerta nativa usando el Service Worker
   const lanzarNotificacionViaLibre = () => {
     if ('serviceWorker' in navigator && Notification.permission === 'granted') {
       navigator.serviceWorker.ready.then((registro) => {
         registro.showNotification('🟢 ¡Vía Libre!', {
-          body: 'Tu cuerpo ha procesado el alcohol acumulado. Estás de vuelta en zona segura. 🍻',
+          body: 'Tu hígado ha terminado de procesar todo el alcohol. ¡Estás a cero! 🥳',
           icon: '/vite.svg',
           vibrate: [200, 100, 200]
         })
@@ -51,28 +48,30 @@ export default function Dashboard() {
     }
   }
 
-  // Registrar bebida y añadirla al historial (¡Ahora acumula tiempo!)
-  const handleAddDrink = async () => {
-    const mins = parseInt(localStorage.getItem('intervalo_minutos') || '45', 10)
+  // Lógica científica: 1 UBE = 60 minutos inamovibles de procesamiento en hígado sano
+  const handleAddDrink = async (nombreBebida, ubes) => {
+    const MINS_PER_UBE = 60
+    const tiempoBebidaMs = ubes * MINS_PER_UBE * 60 * 1000
+
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
     const ahora = Date.now()
 
     let newTargetTime
-    
     if (currentTarget > ahora) {
-      newTargetTime = currentTarget + (mins * 60 * 1000)
+      newTargetTime = currentTarget + tiempoBebidaMs // Acumula tiempo al hígado colapsado
     } else {
-      newTargetTime = ahora + (mins * 60 * 1000)
+      newTargetTime = ahora + tiempoBebidaMs // Empieza cuenta nueva
     }
 
     localStorage.setItem('hora_objetivo', newTargetTime.toString())
-
     const minutosTotalesRestantes = Math.round((newTargetTime - ahora) / (60 * 1000))
 
+    // Guardar la bebida detallada con sus UBEs en el historial
     const newDrink = {
       id: Date.now(),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: 'Cerveza / Vino (1 UBE)'
+      type: `${nombreBebida} (${ubes} UBE${ubes > 1 ? 's' : ''})`,
+      ubes: ubes
     }
     const updatedHistory = [...history, newDrink]
     setHistory(updatedHistory)
@@ -80,6 +79,7 @@ export default function Dashboard() {
 
     calculateTimeLeft()
 
+    // Sincronizar con el servidor
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registro = await navigator.serviceWorker.ready
@@ -94,47 +94,24 @@ export default function Dashboard() {
               minutos: minutosTotalesRestantes
             })
           })
-          console.log('Alerta de Vía Libre acumulativa delegada al servidor.')
         }
       } catch (error) {
-        console.error('No se pudo programar el push en el servidor:', error)
+        console.error('Error al delegar el push acumulado:', error)
       }
     }
   }
 
-  // 3. Botón "Terminar Fiesta" (Modificado para persistir el estado y limpiar timers)
-  const handleEndParty = async () => {
-    localStorage.setItem('mostrar_resumen', 'true')
-    localStorage.removeItem('hora_objetivo') // El contador muere inmediatamente
-    setTimeLeft(0)
-    setIsActive(false)
+  // 🚀 NUEVO: Guardamos en disco que la fiesta ha terminado
+  const handleEndParty = () => {
     setShowSummary(true)
-
-    // Avisamos al backend para cancelar el push diferido en la nube
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      try {
-        const registro = await navigator.serviceWorker.ready
-        const suscripcionExistente = await registro.pushManager.getSubscription()
-
-        if (suscripcionExistente) {
-          await fetch('http://localhost:3000/cancel-via-libre', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint: suscripcionExistente.endpoint })
-          })
-          console.log('Alerta de la nube cancelada con éxito.')
-        }
-      } catch (error) {
-        console.error('No se pudo cancelar el push en el servidor:', error)
-      }
-    }
+    localStorage.setItem('fiesta_terminada', 'true')
   }
 
-  // 4. Resetear todo para la próxima noche
+  // 🚀 NUEVO: Limpiamos también el estado de la fiesta al reiniciar
   const handleReset = () => {
     localStorage.removeItem('hora_objetivo')
     localStorage.removeItem('historial_bebidas')
-    localStorage.removeItem('mostrar_resumen') // Limpiamos el rastro del resumen
+    localStorage.removeItem('fiesta_terminada')
     setHistory([])
     setTimeLeft(0)
     setIsActive(false)
@@ -148,16 +125,41 @@ export default function Dashboard() {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
-  // Vista de Resumen de la mañana siguiente
+  // Calcular el total de UBEs reales consumidas en la noche
+  const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
+
+  // Algoritmo del diagnóstico de la mañana siguiente
+  const obtenerDiagnosticoResaca = () => {
+    if (totalUbesConsumidas <= 2) {
+      return {
+        texto: "🏆 ¡Cero resaca! Has mantenido un control clínico impecable. Tu cuerpo está limpio y mañana te levantarás como nuevo. ¡A disfrutar del día!",
+        color: "#22c55e"
+      }
+    } else if (totalUbesConsumidas <= 5) {
+      return {
+        texto: "⚠️ Resaca leve/moderada en camino. Tu hígado ha tenido trabajo extra. Asegúrate de beber dos vasos grandes de agua antes de dormir y tu cabeza te lo agradecerá.",
+        color: "#eab308"
+      }
+    } else {
+      return {
+        texto: "💀 ¡Resaca brutal garantizada! Tu hígado está completamente desbordado y saturado. Ve preparando el ibuprofeno, deja una botella de agua al lado de la cama y cancela tus planes matutinos.",
+        color: "#ef4444"
+      }
+    }
+  }
+
+  const diagnostico = obtenerDiagnosticoResaca()
+
+  // Vista de Resumen Diagnóstico
   if (showSummary) {
     return (
       <div style={styles.container}>
         <h2>📊 Resumen de la noche</h2>
         <div style={styles.summaryCard}>
-          <p style={{ fontSize: '1.2rem' }}>Bebidas totales: <strong>{history.length} UBEs</strong></p>
-          <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-            {history.length <= 3 ? '¡Excelente control! Tu hígado te lo agradece. 🏆' : 'Buen intento, la próxima noche saldrá mejor. 👍'}
-          </p>
+          <p style={{ fontSize: '1.4rem' }}>Alcohol total: <strong>{totalUbesConsumidas} UBEs</strong></p>
+          <div style={{ ...styles.diagnosticoBox, borderColor: diagnostico.color }}>
+            <p style={{ color: '#1f2937', margin: 0, lineHeight: '1.5' }}>{diagnostico.texto}</p>
+          </div>
         </div>
         <button style={styles.resetButton} onClick={handleReset}>Iniciar Nueva Fiesta</button>
       </div>
@@ -175,11 +177,23 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <button style={styles.button} onClick={handleAddDrink}>
-        🍺 Añadir Bebida (1 UBE)
-      </button>
+      <div style={styles.gridContainer}>
+        <button style={{ ...styles.drinkButton, backgroundColor: '#3b82f6' }} onClick={() => handleAddDrink('Cerveza / Vino', 1)}>
+          <span>🍺 caña / vino</span>
+          <span style={styles.ubeTag}>1 UBE</span>
+        </button>
 
-      {/* Sección del Historial */}
+        <button style={{ ...styles.drinkButton, backgroundColor: '#a855f7' }} onClick={() => handleAddDrink('Chupito', 1)}>
+          <span>🥃 Chupito</span>
+          <span style={styles.ubeTag}>1 UBE</span>
+        </button>
+
+        <button style={{ ...styles.drinkButton, backgroundColor: '#ec4899', gridColumn: 'span 2' }} onClick={() => handleAddDrink('Combinado / Copa', 2)}>
+          <span>🍹 Combinado / Copa Larga</span>
+          <span style={styles.ubeTag}>2 UBEs</span>
+        </button>
+      </div>
+
       {history.length > 0 && (
         <div style={styles.historySection}>
           <h3>Llevas {history.length} {history.length === 1 ? 'bebida' : 'bebidas'} anoche:</h3>
@@ -202,11 +216,14 @@ const styles = {
   container: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '2rem' },
   circle: { width: '220px', height: '220px', borderRadius: '50%', borderWidth: '12px', borderStyle: 'solid', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', transition: 'border-color 0.5s ease' },
   timerText: { fontSize: '3.2rem', fontWeight: 'bold', margin: 0, color: '#1f2937', fontVariantNumeric: 'tabular-nums' },
-  button: { padding: '1rem 2rem', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
-  historySection: { width: '100%', maxWidth: '320px', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
+  gridContainer: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', width: '100%', maxWidth: '340px' },
+  drinkButton: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', padding: '1rem', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.08)', transition: 'transform 0.1s ease' },
+  ubeTag: { fontSize: '0.75rem', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.2rem 0.5rem', borderRadius: '8px', fontWeight: 'normal' },
+  historySection: { width: '100%', maxWidth: '340px', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
   list: { listStyle: 'none', backgroundColor: 'white', borderRadius: '12px', padding: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
   listItem: { display: 'flex', justifyContent: 'space-between', padding: '0.8rem', borderBottom: '1px solid #f3f4f6' },
-  endButton: { padding: '0.8rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' },
-  summaryCard: { backgroundColor: 'white', padding: '2rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', width: '100%', maxWidth: '320px' },
-  resetButton: { padding: '1rem 2rem', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }
+  endButton: { padding: '1rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' },
+  summaryCard: { backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '1rem' },
+  diagnosticoBox: { padding: '1rem', borderRadius: '12px', backgroundColor: '#f9fafb', borderLeft: '5px solid', textAlign: 'left' },
+  resetButton: { padding: '1rem 2rem', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }
 }

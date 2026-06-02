@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react'
 
 export default function Settings() {
-  // --- 1. ESTADOS LOCALES INDEPENDIENTES ---
-  const [intervaloMinutos, setIntervaloMinutos] = useState('45') // Alcohol (UBEs)
-  const [intervaloHoras, setIntervaloHoras] = useState('2')     // Agua (Push)
+  // --- 1. ESTADO LOCAL ---
+  const [intervaloHoras, setIntervaloHoras] = useState('2') // Agua (Push)
 
   // --- 2. CARGA INICIAL DESDE LOCALSTORAGE ---
   useEffect(() => {
-    // Cargar ajuste de Alcohol
-    const valorMinutos = localStorage.getItem('intervalo_minutos')
-    if (valorMinutos) {
-      setIntervaloMinutos(valorMinutos)
-    } else {
-      localStorage.setItem('intervalo_minutos', '45')
-    }
+    // 🧹 LIMPIEZA: Borramos el antiguo ajuste manual de alcohol de los teléfonos de los usuarios
+    localStorage.removeItem('intervalo_minutos')
 
     // Cargar ajuste de Agua
     const valorHoras = localStorage.getItem('intervalo_horas')
@@ -24,14 +18,7 @@ export default function Settings() {
     }
   }, [])
 
-  // --- 3. MANEJADORES DE CAMBIO (HANDLERS) ---
-
-  // Cambios en el tiempo entre bebidas (Solo local)
-  const handleMinutosChange = (e) => {
-    const nuevoValor = e.target.value
-    setIntervaloMinutos(nuevoValor)
-    localStorage.setItem('intervalo_minutos', nuevoValor)
-  }
+  // --- 3. MANEJADOR DE CAMBIO ---
 
   // Cambios en el recordatorio de agua (Local + Sincronización con Backend)
   const handleHorasChange = async (e) => {
@@ -72,31 +59,19 @@ export default function Settings() {
 
       <div style={styles.formGroup}>
 
-        {/* SECCIÓN ALCOHOL / UBEs (Tu código original blindado) */}
-        <label style={styles.label}>
-          <strong>Minutos de espera por UBE:</strong>
-          <select
-            value={intervaloMinutos}
-            onChange={handleMinutosChange}
-            style={styles.select}
-          >
-            <option value="30">30 minutos</option>
-            <option value="45">45 minutos</option>
-            <option value="60">60 minutos</option>
-            <option value="90">90 minutos</option>
-          </select>
-        </label>
-
+        {/* 🚀 SECCIÓN ALCOHOL / UBEs (Ahora 100% científica e informativa) */}
         <div style={styles.infoBoxAlcohol}>
+          <h3 style={styles.infoTitleAlcohol}>🧪 Procesamiento Hepático</h3>
           <p style={styles.infoTextAlcohol}>
-            *Nota: Científicamente, el cuerpo humano tarda alrededor de 60 minutos en procesar y eliminar 1 UBE (Unidad de Bebida Estándar) del sistema.
+            El tiempo de procesamiento del alcohol está fijado por defecto bajo estándares médicos. Tu hígado procesará <strong>1 UBE cada 60 minutos</strong>.
+            El sistema calculará y acumulará tu tiempo automáticamente en la pantalla principal según lo que bebas.
           </p>
         </div>
 
         {/* Separador visual elegante */}
         <hr style={styles.divider} />
 
-        {/* SECCIÓN AGUA / NOTIFICACIONES (La nueva funcionalidad) */}
+        {/* SECCIÓN AGUA / NOTIFICACIONES */}
         <label style={styles.label}>
           <strong>Frecuencia de los recordatorios de agua:</strong>
           <select
@@ -124,7 +99,7 @@ export default function Settings() {
 
 const styles = {
   container: { padding: '2rem' },
-  formGroup: { marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+  formGroup: { marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' },
   label: { display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '1.1rem', color: '#1f2937' },
   select: {
     padding: '0.8rem',
@@ -135,10 +110,11 @@ const styles = {
     cursor: 'pointer'
   },
   divider: { border: 'none', borderTop: '1px solid #e5e7eb', margin: '0.5rem 0' },
-  // Caja original de alcohol (Tono ámbar/aviso)
-  infoBoxAlcohol: { padding: '1rem', backgroundColor: '#fef3c7', borderRadius: '8px', borderLeft: '4px solid #f59e0b' },
-  infoTextAlcohol: { color: '#b45309', fontSize: '0.9rem', margin: 0, lineHeight: '1.4' },
-  // Caja nueva de agua (Tono azul hidratación)
+  // Caja informativa de alcohol rediseñada
+  infoBoxAlcohol: { padding: '1.5rem', backgroundColor: '#fef3c7', borderRadius: '12px', borderLeft: '5px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: '0.8rem' },
+  infoTitleAlcohol: { margin: 0, color: '#92400e', fontSize: '1.2rem', fontWeight: 'bold' },
+  infoTextAlcohol: { color: '#b45309', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' },
+  // Caja original de agua
   infoBoxAgua: { padding: '1rem', backgroundColor: '#e0f2fe', borderRadius: '8px', borderLeft: '4px solid #3b82f6' },
   infoTextAgua: { color: '#0369a1', fontSize: '0.9rem', margin: 0, lineHeight: '1.4' }
 }
