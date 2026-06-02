@@ -43,7 +43,7 @@ function App() {
       console.log('Suscripción generada en el navegador:', suscripcion);
 
       // Enviar el JSON directo al backend en Node (Puerto 3000)
-      const respuesta = await fetch('http://localhost:3000/subscribe', {
+      const respuesta = await fetch(`${import.meta.env.VITE_BACKEND_URL}/subscribe`, {
         method: 'POST',
         body: JSON.stringify(suscripcion),
         headers: {

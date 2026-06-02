@@ -33,7 +33,7 @@ export default function Settings() {
         const suscripcionExistente = await registro.pushManager.getSubscription()
 
         if (suscripcionExistente) {
-          const respuesta = await fetch('http://localhost:3000/update-interval', {
+          const respuesta = await fetch(`${import.meta.env.VITE_BACKEND_URL}/update-interval`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

@@ -86,7 +86,7 @@ export default function Dashboard() {
         const suscripcionExistente = await registro.pushManager.getSubscription()
 
         if (suscripcionExistente) {
-          await fetch('http://localhost:3000/schedule-via-libre', {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/schedule-via-libre`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
