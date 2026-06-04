@@ -208,6 +208,31 @@ export default function Dashboard() {
   const isPulsing = isActive && timeLeft > 0 && timeLeft <= 900000
   //const isPulsing = isActive Late siempre
 
+  // 🧠 CÁLCULO WIDMARK (ALCOHOLEMIA)
+  const peso = parseFloat(localStorage.getItem('usuario_peso'))
+  const sexo = localStorage.getItem('usuario_sexo')
+
+  let bacEst = 0
+  if (history.length > 0 && peso && sexo) {
+    const primeraBebidaMs = history[0].id
+    const horasTranscurridas = Math.max(0, (Date.now() - primeraBebidaMs) / (1000 * 60 * 60))
+
+    // 1 UBE en España = 10g de alcohol puro
+    const gramosAlcohol = totalUbesConsumidas * 10
+
+    // Ratio de distribución de Widmark
+    const r = sexo === 'M' ? 0.55 : 0.68
+
+    // Tasa metabólica promedio: 0.15 g/L por hora
+    const calculo = (gramosAlcohol / (peso * r)) - (0.15 * horasTranscurridas)
+    bacEst = Math.max(0, calculo)
+  }
+
+  // Colores para la tasa de alcoholemia (Límite en España 0.5 g/L en sangre)
+  let bacColor = '#22c55e' // Verde (< 0.25)
+  if (bacEst >= 0.25 && bacEst < 0.5) bacColor = '#eab308' // Amarillo (Precaución)
+  if (bacEst >= 0.5) bacColor = '#ef4444' // Rojo (Ilegal / Alto Riesgo)
+
   if (showSummary) {
     return (
       <div className={styles.container}>
@@ -286,6 +311,35 @@ export default function Dashboard() {
           <span className={styles.ubeTag}>2 UBEs</span>
         </button>
       </div>
+
+      {/* 🩸 NUEVA TARJETA DE ALCOHOLEMIA */}
+      {history.length > 0 && (
+        <div className={styles.bacCard}>
+          <h3 className={styles.bacTitle}>🩸 Tasa de Alcoholemia Estimada</h3>
+
+          {(!peso || !sexo) ? (
+            <p className={styles.bacMissing}>
+              ⚠️ Configura tu <strong>Peso y Sexo</strong> en la pestaña Ajustes para ver tu estimación.
+            </p>
+          ) : (
+            <>
+
+              <p className={styles.bacValue} style={{ color: bacColor }}>
+                {bacEst.toFixed(2)} <span style={{ fontSize: '1.2rem' }}>g/L en sangre</span>
+              </p>
+              {/* Añadimos la conversión al etilómetro justo debajo */}
+              <p style={{ margin: '0 0 1rem 0', color: '#6b7280', fontSize: '1rem', fontWeight: 'bold' }}>
+                (Equivale a {(bacEst / 2).toFixed(2)} mg/L en aire)
+              </p>
+              <p className={styles.bacDisclaimer}>
+                *Cálculo teórico (Fórmula de Widmark). La única tasa segura para conducir es 0.0 g/L. No utilices este dato para tomar decisiones de riesgo.
+              </p>
+
+
+            </>
+          )}
+        </div>
+      )}
 
       {history.length > 0 && (
         <div className={styles.historySection}>
