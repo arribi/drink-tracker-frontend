@@ -1,0 +1,83 @@
+/* Settings.module.css */
+
+.container {
+  padding: 2rem;
+}
+
+.formGroup {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.select {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto al tocar/desplegar el selector */
+.select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 0.5rem 0;
+}
+
+/* --- SECCIÓN ALCOHOL --- */
+.infoBoxAlcohol {
+  padding: 1.5rem;
+  background-color: #fef3c7;
+  border-radius: 12px;
+  border-left: 5px solid #f59e0b;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.infoTitleAlcohol {
+  margin: 0;
+  color: #92400e;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.infoTextAlcohol {
+  color: #b45309;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* --- SECCIÓN AGUA --- */
+.infoBoxAgua {
+  padding: 1rem;
+  background-color: #e0f2fe;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.infoTextAgua {
+  color: #0369a1;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}

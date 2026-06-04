@@ -1,0 +1,165 @@
+/* Dashboard.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+/* --- CÍRCULO DEL TEMPORIZADOR --- */
+.circle {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border-width: 12px;
+  border-style: solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  transition: border-color 0.5s ease;
+}
+
+.circleActive { border-color: #f97316; }
+.circleInactive { border-color: #22c55e; }
+
+.timerText {
+  font-size: 3.2rem;
+  font-weight: bold;
+  margin: 0;
+  color: #1f2937;
+  font-variant-numeric: tabular-nums;
+}
+
+.timerLabel {
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* --- BOTONES DE BEBIDAS --- */
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 340px;
+}
+
+.drinkButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 1rem;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+/* 🌟 Efecto táctil para móvil */
+.drinkButton:active, .undoButton:active, .endButton:active, .resetButton:active {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+/* Clases específicas para cada bebida */
+.drinkSuave { background-color: #fcd34d; color: #78350f; }
+.drinkCana { background-color: #60a5fa; }
+.drinkFuerte { background-color: #f97316; }
+.drinkLata { background-color: #3b82f6; }
+.drinkCopa { background-color: #ec4899; grid-column: span 2; }
+
+.ubeTag {
+  font-size: 0.75rem;
+  background-color: rgba(0,0,0,0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  font-weight: normal;
+}
+.ubeTagDark {
+  background-color: rgba(0,0,0,0.1); /* Para el chupito suave que tiene fondo claro */
+}
+
+/* --- SECCIÓN DE HISTORIAL --- */
+.historySection {
+  width: 100%;
+  max-width: 340px;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.historyTitle {
+  margin: 0 0 0.5rem 0;
+  color: #4b5563;
+  font-size: 1.1rem;
+}
+
+.list {
+  list-style: none;
+  background-color: white;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin: 0;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.95rem;
+}
+.listItem:last-child {
+  border-bottom: none; /* Quitamos la línea al último elemento */
+}
+
+.timeText { color: #9ca3af; }
+
+/* --- BOTONES DE ACCIÓN --- */
+.actionGroup { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; }
+.undoButton { padding: 1rem; background-color: #9ca3af; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+.endButton { padding: 1rem; background-color: #ef4444; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+.resetButton { padding: 1rem 2rem; background-color: #22c55e; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; max-width: 340px; margin-top: 0.5rem; }
+
+/* --- PANTALLA DE RESUMEN --- */
+.summaryCard {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summaryTotal { font-size: 1.4rem; margin: 0; }
+
+.diagnosticoBox {
+  padding: 1rem;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  border-left-width: 5px;
+  border-left-style: solid;
+  text-align: left;
+}
+
+.diagnosticoText {
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.5;
+}
