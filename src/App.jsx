@@ -2,8 +2,7 @@ import { useState } from 'react'
 import Dashboard from './components/Dashboard'
 import Settings from './components/Settings'
 
-
-const VAPID_PUBLIC_KEY = 'BACohSw7fpHNV7IzTnao5M2TmdGl2IYm2d1UqcgyVhSKAVl-MBBK5UmznSQsA16jBVEtZtsjCykG3jXqY_4MfVI';
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 // Función auxiliar nativa para transformar la llave VAPID y que el navegador la entienda
 function urlBase64ToUint8Array(base64String) {
@@ -21,7 +20,7 @@ function App() {
   // Estado para controlar qué pantalla vemos
   const [currentView, setCurrentView] = useState('dashboard')
 
-  //LÓGICA PARA SOLICITAR PERMISO Y GUARDAR EN MONGO
+  // LÓGICA PARA SOLICITAR PERMISO Y GUARDAR EN MONGO
   const suscribirUsuario = async () => {
     try {
       // A. Pedir permiso nativo al usuario
@@ -68,13 +67,6 @@ function App() {
         <h1>Drink Tracker</h1>
       </header>
 
-      {/* Barra de pruebas global para activar las notificaciones */}
-      <div style={styles.notificationBanner}>
-        <button onClick={suscribirUsuario} style={styles.bannerBtn}>
-          🔔 Activar Recordatorios
-        </button>
-      </div>
-
       {/* Zona principal dinámica */}
       <main style={styles.mainArea}>
         {currentView === 'dashboard' ? <Dashboard /> : <Settings />}
@@ -88,6 +80,15 @@ function App() {
         >
           🏠<br />Inicio
         </button>
+
+        {/* 🔔 BOTÓN INTEGRADO: Activar Notificaciones */}
+        <button
+          style={{ ...styles.navBtn, color: '#f97316' }}
+          onClick={suscribirUsuario}
+        >
+          🔔<br />Activar
+        </button>
+
         <button
           style={{ ...styles.navBtn, color: currentView === 'settings' ? '#3b82f6' : '#666' }}
           onClick={() => setCurrentView('settings')}
@@ -102,11 +103,9 @@ function App() {
 const styles = {
   appShell: { display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', backgroundColor: '#f3f4f6' },
   header: { backgroundColor: '#1e293b', color: 'white', padding: '1rem', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 10 },
-  notificationBanner: { backgroundColor: '#e2e8f0', padding: '0.6rem', textAlign: 'center', borderBottom: '1px solid #cbd5e1', zIndex: 5 },
-  bannerBtn: { backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   mainArea: { flex: 1, overflowY: 'auto', position: 'relative' },
   bottomNav: { display: 'flex', justifyContent: 'space-around', backgroundColor: 'white', borderTop: '1px solid #e5e7eb', padding: '0.8rem 0', paddingBottom: 'env(safe-area-inset-bottom)' },
-  navBtn: { background: 'none', border: 'none', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }
+  navBtn: { background: 'none', border: 'none', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', fontWeight: 'bold' }
 }
 
 export default App;
