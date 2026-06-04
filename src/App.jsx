@@ -71,7 +71,7 @@ function App() {
       {/* Barra de pruebas global para activar las notificaciones */}
       <div style={styles.notificationBanner}>
         <button onClick={suscribirUsuario} style={styles.bannerBtn}>
-          🔔 Activar Recordatorios Push
+          🔔 Activar Recordatorios
         </button>
       </div>
 

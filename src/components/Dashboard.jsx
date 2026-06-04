@@ -5,7 +5,7 @@ export default function Dashboard() {
   const [isActive, setIsActive] = useState(false)
   const [history, setHistory] = useState([])
 
-  // 🚀 NUEVO: Comprobamos en el localStorage si la fiesta ya había terminado al abrir la app
+  // Comprobamos en el localStorage si la fiesta ya había terminado al abrir la app
   const [showSummary, setShowSummary] = useState(
     localStorage.getItem('fiesta_terminada') === 'true'
   )
@@ -48,7 +48,7 @@ export default function Dashboard() {
     }
   }
 
-  // Lógica científica: 1 UBE = 60 minutos inamovibles de procesamiento en hígado sano
+  // Lógica científica: 1 UBE = 60 minutos inamovibles de procesamiento
   const handleAddDrink = async (nombreBebida, ubes) => {
     const MINS_PER_UBE = 60
     const tiempoBebidaMs = ubes * MINS_PER_UBE * 60 * 1000
@@ -58,7 +58,7 @@ export default function Dashboard() {
 
     let newTargetTime
     if (currentTarget > ahora) {
-      newTargetTime = currentTarget + tiempoBebidaMs // Acumula tiempo al hígado colapsado
+      newTargetTime = currentTarget + tiempoBebidaMs // Acumula tiempo
     } else {
       newTargetTime = ahora + tiempoBebidaMs // Empieza cuenta nueva
     }
@@ -71,7 +71,7 @@ export default function Dashboard() {
       id: Date.now(),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: `${nombreBebida} (${ubes} UBE${ubes > 1 ? 's' : ''})`,
-      ubes: ubes
+      ubes: ubes // Guardamos las UBEs exactas para poder restarlas si se hace "Undo"
     }
     const updatedHistory = [...history, newDrink]
     setHistory(updatedHistory)
@@ -79,7 +79,7 @@ export default function Dashboard() {
 
     calculateTimeLeft()
 
-    // Sincronizar con el servidor
+    // Sincronizar con el servidor (Usando la variable de entorno)
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registro = await navigator.serviceWorker.ready
@@ -101,13 +101,64 @@ export default function Dashboard() {
     }
   }
 
-  // 🚀 NUEVO: Guardamos en disco que la fiesta ha terminado
+  // 🚀 NUEVA FUNCIÓN: Deshacer la última bebida introducida por error
+  const handleUndoLastDrink = async () => {
+    if (history.length === 0) return
+
+    // 1. Sacamos la última bebida del historial
+    const lastDrink = history[history.length - 1]
+    const updatedHistory = history.slice(0, -1)
+    setHistory(updatedHistory)
+    localStorage.setItem('historial_bebidas', JSON.stringify(updatedHistory))
+
+    // 2. Calculamos los milisegundos a restar
+    const MINS_PER_UBE = 60
+    const tiempoBebidaMs = (lastDrink.ubes || 1) * MINS_PER_UBE * 60 * 1000
+
+    const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
+    const ahora = Date.now()
+    let newTargetTime = currentTarget - tiempoBebidaMs
+
+    // 3. Actualizamos los tiempos locales
+    if (newTargetTime <= ahora || updatedHistory.length === 0) {
+      localStorage.removeItem('hora_objetivo')
+      setTimeLeft(0)
+      setIsActive(false)
+      newTargetTime = ahora
+    } else {
+      localStorage.setItem('hora_objetivo', newTargetTime.toString())
+      setTimeLeft(newTargetTime - ahora)
+      setIsActive(true)
+    }
+
+    // 4. Sincronizamos la reducción de tiempo con el servidor
+    const minutosTotalesRestantes = Math.max(0, Math.round((newTargetTime - ahora) / (60 * 1000)))
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const registro = await navigator.serviceWorker.ready
+        const suscripcionExistente = await registro.pushManager.getSubscription()
+
+        if (suscripcionExistente) {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/schedule-via-libre`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              endpoint: suscripcionExistente.endpoint,
+              minutos: minutosTotalesRestantes
+            })
+          })
+        }
+      } catch (error) {
+        console.error('Error al actualizar el servidor tras deshacer:', error)
+      }
+    }
+  }
+
   const handleEndParty = () => {
     setShowSummary(true)
     localStorage.setItem('fiesta_terminada', 'true')
   }
 
-  // 🚀 NUEVO: Limpiamos también el estado de la fiesta al reiniciar
   const handleReset = () => {
     localStorage.removeItem('hora_objetivo')
     localStorage.removeItem('historial_bebidas')
@@ -125,10 +176,8 @@ export default function Dashboard() {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
-  // Calcular el total de UBEs reales consumidas en la noche
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
 
-  // Algoritmo del diagnóstico de la mañana siguiente
   const obtenerDiagnosticoResaca = () => {
     if (totalUbesConsumidas <= 2) {
       return {
@@ -150,7 +199,6 @@ export default function Dashboard() {
 
   const diagnostico = obtenerDiagnosticoResaca()
 
-  // Vista de Resumen Diagnóstico
   if (showSummary) {
     return (
       <div style={styles.container}>
@@ -177,15 +225,26 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {/* Rejilla de selección avanzada de bebidas */}
       <div style={styles.gridContainer}>
-        <button style={{ ...styles.drinkButton, backgroundColor: '#3b82f6' }} onClick={() => handleAddDrink('Cerveza / Vino', 1)}>
-          <span>🍺 caña / vino</span>
+        <button style={{ ...styles.drinkButton, backgroundColor: '#fcd34d', color: '#78350f' }} onClick={() => handleAddDrink('Chupito Suave', 0.5)}>
+          <span>🥃 Chupito Suave</span>
+          <span style={{ ...styles.ubeTag, backgroundColor: 'rgba(0,0,0,0.1)' }}>0.5 UBE</span>
+        </button>
+
+        <button style={{ ...styles.drinkButton, backgroundColor: '#60a5fa' }} onClick={() => handleAddDrink('Caña / Vino', 1)}>
+          <span>🍺 Caña / Vino</span>
           <span style={styles.ubeTag}>1 UBE</span>
         </button>
 
-        <button style={{ ...styles.drinkButton, backgroundColor: '#a855f7' }} onClick={() => handleAddDrink('Chupito', 1)}>
-          <span>🥃 Chupito</span>
+        <button style={{ ...styles.drinkButton, backgroundColor: '#f97316' }} onClick={() => handleAddDrink('Chupito Fuerte', 1)}>
+          <span>🔥 Chupito Fuerte</span>
           <span style={styles.ubeTag}>1 UBE</span>
+        </button>
+
+        <button style={{ ...styles.drinkButton, backgroundColor: '#3b82f6' }} onClick={() => handleAddDrink('Lata / Tercio', 1.5)}>
+          <span>🍺 Lata / Tercio</span>
+          <span style={styles.ubeTag}>1.5 UBEs</span>
         </button>
 
         <button style={{ ...styles.drinkButton, backgroundColor: '#ec4899', gridColumn: 'span 2' }} onClick={() => handleAddDrink('Combinado / Copa', 2)}>
@@ -205,7 +264,12 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
-          <button style={styles.endButton} onClick={handleEndParty}>🛑 Terminar Fiesta</button>
+
+          {/* Botones de acción del historial */}
+          <div style={styles.actionGroup}>
+            <button style={styles.undoButton} onClick={handleUndoLastDrink}>↩️ Deshacer Última</button>
+            <button style={styles.endButton} onClick={handleEndParty}>🛑 Terminar Fiesta</button>
+          </div>
         </div>
       )}
     </div>
@@ -222,6 +286,8 @@ const styles = {
   historySection: { width: '100%', maxWidth: '340px', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
   list: { listStyle: 'none', backgroundColor: 'white', borderRadius: '12px', padding: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
   listItem: { display: 'flex', justifyContent: 'space-between', padding: '0.8rem', borderBottom: '1px solid #f3f4f6' },
+  actionGroup: { display: 'flex', flexDirection: 'column', gap: '0.8rem', width: '100%' },
+  undoButton: { padding: '1rem', backgroundColor: '#9ca3af', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', transition: 'background-color 0.2s' },
   endButton: { padding: '1rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' },
   summaryCard: { backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '1rem' },
   diagnosticoBox: { padding: '1rem', borderRadius: '12px', backgroundColor: '#f9fafb', borderLeft: '5px solid', textAlign: 'left' },
