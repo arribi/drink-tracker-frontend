@@ -47,8 +47,20 @@ export default function Dashboard() {
     }
   }
 
+  const calcularMinsPerUbe = () => {
+    const peso = parseFloat(localStorage.getItem('usuario_peso'))
+    const sexo = localStorage.getItem('usuario_sexo')
+
+    if (peso && sexo) {
+      const r = sexo === 'M' ? 0.55 : 0.68
+      const horas = 10 / (0.15 * peso * r)
+      return Math.round(horas * 60)
+    }
+    return 60
+  }
+
   const handleAddDrink = async (nombreBebida, ubes) => {
-    const MINS_PER_UBE = 60
+    const MINS_PER_UBE = calcularMinsPerUbe()
     const tiempoBebidaMs = ubes * MINS_PER_UBE * 60 * 1000
 
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
@@ -105,7 +117,7 @@ export default function Dashboard() {
     setHistory(updatedHistory)
     localStorage.setItem('historial_bebidas', JSON.stringify(updatedHistory))
 
-    const MINS_PER_UBE = 60
+    const MINS_PER_UBE = calcularMinsPerUbe()
     const tiempoBebidaMs = (lastDrink.ubes || 1) * MINS_PER_UBE * 60 * 1000
 
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
@@ -178,7 +190,7 @@ export default function Dashboard() {
     const ahoraMs = Date.now()
 
     const horasTranscurridas = Math.max(0, (ahoraMs - primeraBebidaMs) / (1000 * 60 * 60))
-    const ubesMetabolizadas = horasTranscurridas * 1
+    const ubesMetabolizadas = horasTranscurridas * (60 / calcularMinsPerUbe())
     const cargaActual = Math.max(0, totalUbesConsumidas - ubesMetabolizadas)
 
     if (cargaActual <= 0.5) {
@@ -194,21 +206,17 @@ export default function Dashboard() {
 
   const diagnostico = obtenerDiagnosticoResaca()
 
-  // 🧠 CÁLCULO DEL PROGRESO DINÁMICO
   let porcentajeProgreso = 100
   if (isActive && totalUbesConsumidas > 0) {
-    const tiempoTotalMs = totalUbesConsumidas * 60 * 60 * 1000
+    const tiempoTotalMs = totalUbesConsumidas * calcularMinsPerUbe() * 60 * 1000
     porcentajeProgreso = Math.min(100, Math.max(0, (timeLeft / tiempoTotalMs) * 100))
   }
 
   const ringColor = isActive ? '#f97316' : '#22c55e'
   const bgColor = '#d1d5db'
 
-  // Si quedan menos de 15 minutos (900.000 ms) y está activo, activamos el latido
   const isPulsing = isActive && timeLeft > 0 && timeLeft <= 900000
-  //const isPulsing = isActive Late siempre
 
-  // 🧠 CÁLCULO WIDMARK (ALCOHOLEMIA)
   const peso = parseFloat(localStorage.getItem('usuario_peso'))
   const sexo = localStorage.getItem('usuario_sexo')
 
@@ -217,21 +225,15 @@ export default function Dashboard() {
     const primeraBebidaMs = history[0].id
     const horasTranscurridas = Math.max(0, (Date.now() - primeraBebidaMs) / (1000 * 60 * 60))
 
-    // 1 UBE en España = 10g de alcohol puro
     const gramosAlcohol = totalUbesConsumidas * 10
-
-    // Ratio de distribución de Widmark
     const r = sexo === 'M' ? 0.55 : 0.68
-
-    // Tasa metabólica promedio: 0.15 g/L por hora
     const calculo = (gramosAlcohol / (peso * r)) - (0.15 * horasTranscurridas)
     bacEst = Math.max(0, calculo)
   }
 
-  // Colores para la tasa de alcoholemia (Límite en España 0.5 g/L en sangre)
-  let bacColor = '#22c55e' // Verde (< 0.25)
-  if (bacEst >= 0.25 && bacEst < 0.5) bacColor = '#eab308' // Amarillo (Precaución)
-  if (bacEst >= 0.5) bacColor = '#ef4444' // Rojo (Ilegal / Alto Riesgo)
+  let bacColor = '#22c55e'
+  if (bacEst >= 0.25 && bacEst < 0.5) bacColor = '#eab308'
+  if (bacEst >= 0.5) bacColor = '#ef4444'
 
   if (showSummary) {
     return (
@@ -268,7 +270,6 @@ export default function Dashboard() {
     <div className={styles.container}>
       <h2>{isActive ? '🟠 En proceso' : '🟢 Vía libre'}</h2>
 
-      {/* 🚀 ANILLO DINÁMICO CON EFECTO LATIDO */}
       <div
         className={`${styles.circle} ${isPulsing ? styles.pulseRing : ''}`}
         style={{
@@ -296,6 +297,12 @@ export default function Dashboard() {
           <span className={styles.ubeTag}>1 UBE</span>
         </button>
 
+        {/* 🍸 NUEVO BOTÓN DE VERMÚ / FINO */}
+        <button className={`${styles.drinkButton} ${styles.drinkCana}`} onClick={() => handleAddDrink('Vermú / Fino', 1)}>
+          <span>🍸 Vermú / Fino</span>
+          <span className={styles.ubeTag}>1 UBE</span>
+        </button>
+
         <button className={`${styles.drinkButton} ${styles.drinkFuerte}`} onClick={() => handleAddDrink('Chupito Fuerte', 1)}>
           <span>🔥 Chupito Fuerte</span>
           <span className={styles.ubeTag}>1 UBE</span>
@@ -312,7 +319,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* 🩸 NUEVA TARJETA DE ALCOHOLEMIA */}
       {history.length > 0 && (
         <div className={styles.bacCard}>
           <h3 className={styles.bacTitle}>🩸 Tasa de Alcoholemia Estimada</h3>
@@ -323,19 +329,15 @@ export default function Dashboard() {
             </p>
           ) : (
             <>
-
               <p className={styles.bacValue} style={{ color: bacColor }}>
                 {bacEst.toFixed(2)} <span style={{ fontSize: '1.2rem' }}>g/L en sangre</span>
               </p>
-              {/* Añadimos la conversión al etilómetro justo debajo */}
               <p style={{ margin: '0 0 1rem 0', color: '#6b7280', fontSize: '1rem', fontWeight: 'bold' }}>
                 (Equivale a {(bacEst / 2).toFixed(2)} mg/L en aire)
               </p>
               <p className={styles.bacDisclaimer}>
                 *Cálculo teórico (Fórmula de Widmark). La única tasa segura para conducir es 0.0 g/L. No utilices este dato para tomar decisiones de riesgo.
               </p>
-
-
             </>
           )}
         </div>
