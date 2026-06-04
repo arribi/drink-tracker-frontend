@@ -48,7 +48,6 @@ export default function Dashboard() {
     }
   }
 
-  // Lógica científica: 1 UBE = 60 minutos inamovibles de procesamiento
   const handleAddDrink = async (nombreBebida, ubes) => {
     const MINS_PER_UBE = 60
     const tiempoBebidaMs = ubes * MINS_PER_UBE * 60 * 1000
@@ -58,20 +57,19 @@ export default function Dashboard() {
 
     let newTargetTime
     if (currentTarget > ahora) {
-      newTargetTime = currentTarget + tiempoBebidaMs // Acumula tiempo
+      newTargetTime = currentTarget + tiempoBebidaMs
     } else {
-      newTargetTime = ahora + tiempoBebidaMs // Empieza cuenta nueva
+      newTargetTime = ahora + tiempoBebidaMs
     }
 
     localStorage.setItem('hora_objetivo', newTargetTime.toString())
     const minutosTotalesRestantes = Math.round((newTargetTime - ahora) / (60 * 1000))
 
-    // Guardar la bebida detallada con sus UBEs en el historial
     const newDrink = {
       id: Date.now(),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: `${nombreBebida} (${ubes} UBE${ubes > 1 ? 's' : ''})`,
-      ubes: ubes // Guardamos las UBEs exactas para poder restarlas si se hace "Undo"
+      ubes: ubes
     }
     const updatedHistory = [...history, newDrink]
     setHistory(updatedHistory)
@@ -79,7 +77,6 @@ export default function Dashboard() {
 
     calculateTimeLeft()
 
-    // Sincronizar con el servidor (Usando la variable de entorno)
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registro = await navigator.serviceWorker.ready
@@ -101,7 +98,6 @@ export default function Dashboard() {
     }
   }
 
-  // Deshacer la última bebida introducida por error
   const handleUndoLastDrink = async () => {
     if (history.length === 0) return
 
@@ -121,7 +117,7 @@ export default function Dashboard() {
       localStorage.removeItem('hora_objetivo')
       setTimeLeft(0)
       setIsActive(false)
-      newTargetTime = 超
+      newTargetTime = ahora
     } else {
       localStorage.setItem('hora_objetivo', newTargetTime.toString())
       setTimeLeft(newTargetTime - ahora)
@@ -174,20 +170,40 @@ export default function Dashboard() {
 
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
 
+  // 🚀 NUEVO ALGORITMO CIENTÍFICO + TONO GAMIFICADO
   const obtenerDiagnosticoResaca = () => {
-    if (totalUbesConsumidas <= 2) {
+    if (history.length === 0) {
+      return { texto: "👼 Modo Ángel: No has bebido nada. Mañana estarás resplandeciente.", color: "#22c55e" }
+    }
+
+    const primeraBebidaMs = history[0].id // El ID es el timestamp de creación
+    const ahoraMs = Date.now()
+
+    // Horas exactas desde que empezó a beber
+    const horasTranscurridas = Math.max(0, (ahoraMs - primeraBebidaMs) / (1000 * 60 * 60))
+
+    // Como el cuerpo metaboliza 1 UBE por hora, restamos esas horas al total consumido
+    const ubesMetabolizadas = horasTranscurridas * 1
+    const cargaActual = Math.max(0, totalUbesConsumidas - ubesMetabolizadas)
+
+    if (cargaActual <= 0.5) {
       return {
-        texto: "🏆 ¡Cero resaca! Has mantenido un control clínico impecable. Tu cuerpo está limpio y mañana te levantarás como nuevo. ¡A disfrutar del día!",
+        texto: "🦸‍♂️ Cero resaca: Ritmo clínico perfecto. Tu cuerpo ha procesado casi todo sobre la marcha. Mañana madrugas y te ríes de los demás.",
         color: "#22c55e"
       }
-    } else if (totalUbesConsumidas <= 5) {
+    } else if (cargaActual <= 2.5) {
       return {
-        texto: "⚠️ Resaca leve/moderada en camino. Tu hígado ha tenido trabajo extra. Asegúrate de beber dos vasos grandes de agua antes de dormir y tu cabeza te lo agradecerá.",
+        texto: "🕺 Modo supervivencia: Hay un pequeño atasco metabólico, pero nada grave. Dos vasos de agua antes de dormir y mañana estarás al 90%.",
         color: "#eab308"
+      }
+    } else if (cargaActual <= 5) {
+      return {
+        texto: "🧟‍♂️ Resaca importante: Te has venido bastante arriba. El hígado está pidiendo la hora. Mañana maratón de series en el sofá.",
+        color: "#f97316"
       }
     } else {
       return {
-        texto: "💀 ¡Resaca brutal garantizada! Tu hígado está completamente desbordado y saturado. Ve preparando el ibuprofeno, deja una botella de agua al lado de la cama y cancela tus planes matutinos.",
+        texto: "🪦 Resacón brutal: La ciencia no hace milagros. Has saturado el sistema por completo. Ve redactando tu testamento y cancela los planes de mañana.",
         color: "#ef4444"
       }
     }
@@ -195,11 +211,10 @@ export default function Dashboard() {
 
   const diagnostico = obtenerDiagnosticoResaca()
 
-  // VISTA DE RESUMEN (Actualizada con el historial de la fiesta)
   if (showSummary) {
     return (
       <div style={styles.container}>
-        <h2>📊 Resumen de la fiesta</h2>
+        <h2>📊 Resumen de la noche</h2>
 
         <div style={styles.summaryCard}>
           <p style={{ fontSize: '1.4rem', margin: 0 }}>Alcohol total: <strong>{totalUbesConsumidas} UBEs</strong></p>
@@ -208,10 +223,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Muestra el historial completo de lo consumido en la pantalla de resumen */}
         {history.length > 0 && (
           <div style={styles.historySection}>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: '#4b5563', fontSize: '1.1rem' }}>📋 Bebidas consumidas:</h3>
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#4b5563', fontSize: '1.1rem' }}>📋 Bebidas de la noche:</h3>
             <ul style={styles.list}>
               {history.map((drink) => (
                 <li key={drink.id} style={styles.listItem}>
@@ -228,7 +242,6 @@ export default function Dashboard() {
     )
   }
 
-  // VISTA PRINCIPAL (DURANTE LA FIESTA)
   return (
     <div style={styles.container}>
       <h2>{isActive ? '🟠 En proceso' : '🟢 Vía libre'}</h2>
@@ -269,7 +282,7 @@ export default function Dashboard() {
 
       {history.length > 0 && (
         <div style={styles.historySection}>
-          <h3>Llevas {history.length} {history.length === 1 ? 'bebida' : 'bebidas'} :</h3>
+          <h3>Llevas {history.length} {history.length === 1 ? 'bebida' : 'bebidas'} anoche:</h3>
           <ul style={styles.list}>
             {history.map((drink) => (
               <li key={drink.id} style={styles.listItem}>
@@ -280,8 +293,8 @@ export default function Dashboard() {
           </ul>
 
           <div style={styles.actionGroup}>
-            <button style={styles.undoButton} onClick={handleUndoLastDrink}>↩️ Deshacer última</button>
-            <button style={styles.endButton} onClick={handleEndParty}>🛑 Terminar fiesta</button>
+            <button style={styles.undoButton} onClick={handleUndoLastDrink}>↩️ Deshacer Última</button>
+            <button style={styles.endButton} onClick={handleEndParty}>🛑 Terminar Fiesta</button>
           </div>
         </div>
       )}
