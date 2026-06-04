@@ -194,6 +194,20 @@ export default function Dashboard() {
 
   const diagnostico = obtenerDiagnosticoResaca()
 
+  // 🧠 CÁLCULO DEL PROGRESO DINÁMICO
+  let porcentajeProgreso = 100
+  if (isActive && totalUbesConsumidas > 0) {
+    const tiempoTotalMs = totalUbesConsumidas * 60 * 60 * 1000
+    porcentajeProgreso = Math.min(100, Math.max(0, (timeLeft / tiempoTotalMs) * 100))
+  }
+
+  const ringColor = isActive ? '#f97316' : '#22c55e'
+  const bgColor = '#d1d5db'
+
+  // Si quedan menos de 15 minutos (900.000 ms) y está activo, activamos el latido
+  const isPulsing = isActive && timeLeft > 0 && timeLeft <= 900000
+  //const isPulsing = isActive Late siempre
+
   if (showSummary) {
     return (
       <div className={styles.container}>
@@ -229,12 +243,21 @@ export default function Dashboard() {
     <div className={styles.container}>
       <h2>{isActive ? '🟠 En proceso' : '🟢 Vía libre'}</h2>
 
-      {/* Aquí combinamos las clases del módulo para hacer el borde dinámico */}
-      <div className={`${styles.circle} ${isActive ? styles.circleActive : styles.circleInactive}`}>
-        <p className={styles.timerText}>{formatTime(timeLeft)}</p>
-        <p className={styles.timerLabel}>
-          {isActive ? 'Hígado trabajando' : 'Listos para empezar'}
-        </p>
+      {/* 🚀 ANILLO DINÁMICO CON EFECTO LATIDO */}
+      <div
+        className={`${styles.circle} ${isPulsing ? styles.pulseRing : ''}`}
+        style={{
+          background: `conic-gradient(${ringColor} ${porcentajeProgreso}%, ${bgColor} ${porcentajeProgreso}%)`
+        }}
+      >
+        <div className={styles.circleContent}>
+          <p className={`${styles.timerText} ${isPulsing ? styles.pulseText : ''}`}>
+            {formatTime(timeLeft)}
+          </p>
+          <p className={styles.timerLabel}>
+            {isActive ? 'Hígado trabajando' : 'Listos para empezar'}
+          </p>
+        </div>
       </div>
 
       <div className={styles.gridContainer}>
