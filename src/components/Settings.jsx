@@ -88,7 +88,7 @@ export default function Settings() {
 
         <div style={styles.infoBoxAgua}>
           <p style={styles.infoTextAgua}>
-            *Nota: Las alertas de hidratación llegarán de forma automática a este dispositivo para balancear tu consumo durante la noche, incluso con la app cerrada.
+            *Nota: Las alertas de hidratación llegarán de forma automática a este dispositivo para balancear tu consumo durante la fiesta, incluso con la app cerrada.
           </p>
         </div>
 

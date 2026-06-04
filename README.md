@@ -1,9 +1,9 @@
 
 # 🍺 Cero resaca - Asistente metabólico de fiesta 🍹
 
-¡Tu asistente de bolsillo definitivo para noches de fiesta con rigor científico! Esta aplicación web progresiva (PWA) permite a los usuarios registrar sus consumiciones en tiempo real, calculando de manera exacta el tiempo que necesita el hígado para procesar el alcohol basándose en el estándar de **Unidades de Bebida Estándar (UBEs)**.
+¡Tu asistente de bolsillo definitivo para noches (o tardes) de fiesta con rigor científico! Esta aplicación web progresiva (PWA) permite a los usuarios registrar sus consumiciones en tiempo real, calculando de manera exacta el tiempo que necesita el hígado para procesar el alcohol basándose en el estándar de **Unidades de Bebida Estándar (UBEs)**.
 
-Además, cuenta con un sistema inteligente de alertas de hidratación en segundo plano y un diagnóstico de resaca personalizado al finalizar la noche.
+Además, cuenta con un sistema inteligente de alertas de hidratación en segundo plano y un diagnóstico de resaca personalizado al finalizar la fiesta.
 
 Este repositorio es la interfaz de usuario de **Cero Resaca** (frontend). Puedes acceder al backend de la app en el siguiente repositorio: [https://github.com/arribi/drink-tracker-backend](https://github.com/arribi/drink-tracker-backend)
 
@@ -15,7 +15,7 @@ Este repositorio es la interfaz de usuario de **Cero Resaca** (frontend). Puedes
 - **Diagnóstico matutino:** Al terminar la fiesta, la app analiza las UBEs totales y genera un veredicto clínico sobre el nivel de resaca esperado (Cero, Moderada o Brutal).
 - **Recordatorios de hidratación:** Tareas programadas en el servidor (`cron jobs`) que envían notificaciones push automáticas cada cierto tiempo (configurable) para recordar al usuario que beba agua.
 - **Experiencia PWA completa:** Totalmente instalable en iOS (Safari) y Android (Chrome), funcionando a pantalla completa y recibiendo notificaciones incluso con la app cerrada.
-- **Estado persistente:** El progreso de la noche no se pierde si cierras la pestaña del navegador o reinicias el teléfono.
+- **Estado persistente:** El progreso de la fiesta no se pierde si cierras la pestaña del navegador o reinicias el teléfono.
 
 ---
 
