@@ -11,11 +11,31 @@ export default function Dashboard() {
   )
 
   useEffect(() => {
-    calculateTimeLeft()
+    // 1. Cargar el historial existente
     const savedHistory = JSON.parse(localStorage.getItem('historial_bebidas') || '[]')
-    setHistory(savedHistory)
 
-    // Un intervalo cada segundo mantiene la tasa actualizándose en tiempo real (verás subir los decimales)
+    // AUTO-RESET: Si hay historial, comprobar si la última bebida es "vieja" (más de 12 horas)
+    if (savedHistory.length > 0) {
+      const ultimaBebidaMs = savedHistory[savedHistory.length - 1].id
+      const doceHorasEnMs = 12 * 60 * 60 * 1000
+      const targetTime = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
+      const ahora = Date.now()
+
+      // Si ya no hay tiempo restante Y la última bebida tiene más de 12 horas...
+      if (ahora > targetTime && (ahora - ultimaBebidaMs) > doceHorasEnMs) {
+        // Limpiamos el localStorage silenciosamente para empezar de cero
+        localStorage.removeItem('hora_objetivo')
+        localStorage.removeItem('historial_bebidas')
+        localStorage.removeItem('fiesta_terminada')
+        // No actualizamos el estado 'history' aquí porque justo abajo se va a inicializar vacío
+        savedHistory.length = 0
+      }
+    }
+
+    // 2. Inicializar los estados con los datos (limpios o no)
+    setHistory(savedHistory)
+    calculateTimeLeft()
+
     const timer = setInterval(calculateTimeLeft, 1000)
     return () => clearInterval(timer)
   }, [])
