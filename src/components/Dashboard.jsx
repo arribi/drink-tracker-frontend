@@ -1,6 +1,6 @@
 import styles from './Dashboard.module.css'
 import { useFiesta } from '../hooks/useFiesta'
-import { calcularMinsPerUbe, calcularBacEst, obtenerDiagnosticoResaca } from '../utils/alcoholMath'
+import { calcularMinsPerUbe, calcularBacEst, obtenerDiagnosticoResaca, calcularTendenciaBac } from '../utils/alcoholMath'
 
 // Importamos nuestros nuevos "bloques de Lego"
 import TimerCircle from './TimerCircle'
@@ -35,6 +35,7 @@ export default function Dashboard() {
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
   const diagnostico = obtenerDiagnosticoResaca(history, totalUbesConsumidas, minsPerUbe)
   const bacEst = calcularBacEst(history, peso, sexo, minsPerUbe)
+  const tendenciaBac = calcularTendenciaBac(history, peso, sexo, minsPerUbe)
 
   // --- VARIABLES VISUALES ---
   const porcentajeProgreso = isActive && totalUbesConsumidas > 0
@@ -78,6 +79,7 @@ export default function Dashboard() {
             sexo={sexo}
             bacEst={bacEst}
             bacColor={bacColor}
+            tendencia={tendenciaBac}
           />
 
           <HistoryList

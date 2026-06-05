@@ -1,6 +1,10 @@
 import styles from './Dashboard.module.css'
 
-export default function BacCard({ peso, sexo, bacEst, bacColor }) {
+export default function BacCard({ peso, sexo, bacEst, bacColor, tendencia }) {
+  // Elegimos el icono según la tendencia
+  const iconoTendencia = tendencia === 'subiendo' ? ' ⬆️' : tendencia === 'bajando' ? ' ⬇️' : '';
+  const textoTendencia = tendencia === 'subiendo' ? ' (Subiendo)' : tendencia === 'bajando' ? ' (Bajando)' : '';
+
   return (
     <div className={styles.bacCard}>
       <h3 className={styles.bacTitle}>🩸 Tasa de Alcoholemia Estimada</h3>
@@ -9,10 +13,14 @@ export default function BacCard({ peso, sexo, bacEst, bacColor }) {
       ) : (
         <>
           <p className={styles.bacValue} style={{ color: bacColor }}>
-            {bacEst.toFixed(3)} <span style={{fontSize: '1.2rem'}}>g/L en sangre</span>
+            {bacEst.toFixed(3)} 
+            <span style={{fontSize: '1.2rem', marginLeft: '5px'}}>
+              g/L en sangre {iconoTendencia}
+            </span>
           </p>
+          
           <p style={{ margin: '0 0 1rem 0', color: '#6b7280', fontSize: '1rem', fontWeight: 'bold' }}>
-            (Equivale a {(bacEst / 2).toFixed(3)} mg/L en aire)
+            (Equivale a {(bacEst / 2).toFixed(3)} mg/L en aire) <span style={{fontWeight: 'normal', fontSize: '0.9rem'}}>{textoTendencia}</span>
           </p>
           <p className={styles.bacDisclaimer}>*Cálculo dinámico (Widmark con absorción diferida de 45 min). Conducir solo con 0.0.</p>
         </>
