@@ -15,6 +15,7 @@ export default function Dashboard() {
     const savedHistory = JSON.parse(localStorage.getItem('historial_bebidas') || '[]')
     setHistory(savedHistory)
 
+    // Un intervalo cada segundo mantiene la tasa actualizándose en tiempo real (verás subir los decimales)
     const timer = setInterval(calculateTimeLeft, 1000)
     return () => clearInterval(timer)
   }, [])
@@ -77,7 +78,7 @@ export default function Dashboard() {
     const minutosTotalesRestantes = Math.round((newTargetTime - ahora) / (60 * 1000))
 
     const newDrink = {
-      id: Date.now(),
+      id: Date.now(), // ⏱️ Este timestamp ahora controla la velocidad de absorción g/L
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: `${nombreBebida} (${ubes} UBE${ubes > 1 ? 's' : ''})`,
       ubes: ubes
@@ -220,14 +221,33 @@ export default function Dashboard() {
   const peso = parseFloat(localStorage.getItem('usuario_peso'))
   const sexo = localStorage.getItem('usuario_sexo')
 
+  // 🧠 NUEVA MATEMÁTICA: Cálculo de Alcoholemia con Absorción Dinámica Progresiva
   let bacEst = 0
   if (history.length > 0 && peso && sexo) {
-    const primeraBebidaMs = history[0].id
-    const horasTranscurridas = Math.max(0, (Date.now() - primeraBebidaMs) / (1000 * 60 * 60))
-
-    const gramosAlcohol = totalUbesConsumidas * 10
     const r = sexo === 'M' ? 0.55 : 0.68
-    const calculo = (gramosAlcohol / (peso * r)) - (0.15 * horasTranscurridas)
+    const ahora = Date.now()
+    const primeraBebidaMs = history[0].id
+    const horasTranscurridas = Math.max(0, (ahora - primeraBebidaMs) / (1000 * 60 * 60))
+
+    let gramosAbsorbidosTotales = 0
+    const TIEMPO_ABSORCION_MS = 45 * 60 * 1000 // Cada bebida tarda 45 minutos en absorberse del todo
+
+    history.forEach(drink => {
+      const tiempoDesdeQueSeSurgioMs = ahora - drink.id
+      const gramosTotalesDeEstaBebida = drink.ubes * 10
+
+      if (tiempoDesdeQueSeSurgioMs >= TIEMPO_ABSORCION_MS) {
+        // Si ya pasaron más de 45 mins, todo el alcohol de esta bebida está en sangre
+        gramosAbsorbidosTotales += gramosTotalesDeEstaBebida
+      } else if (tiempoDesdeQueSeSurgioMs > 0) {
+        // Si está en el estómago, calculamos la fracción exacta que ha entrado a la sangre
+        const fraccionAbsorbida = tiempoDesdeQueSeSurgioMs / TIEMPO_ABSORCION_MS
+        gramosAbsorbidosTotales += gramosTotalesDeEstaBebida * fraccionAbsorbida
+      }
+    })
+
+    // Aplicamos Widmark: (Alcohol real absorbido / (peso * r)) - lo que el hígado ya ha quemado
+    const calculo = (gramosAbsorbidosTotales / (peso * r)) - (0.15 * horasTranscurridas)
     bacEst = Math.max(0, calculo)
   }
 
@@ -297,7 +317,6 @@ export default function Dashboard() {
           <span className={styles.ubeTag}>1 UBE</span>
         </button>
 
-        {/* 🍸 NUEVO BOTÓN DE VERMÚ / FINO */}
         <button className={`${styles.drinkButton} ${styles.drinkCana}`} onClick={() => handleAddDrink('Vermú / Fino', 1)}>
           <span>🍸 Vermú / Fino</span>
           <span className={styles.ubeTag}>1 UBE</span>
@@ -333,10 +352,10 @@ export default function Dashboard() {
                 {bacEst.toFixed(2)} <span style={{ fontSize: '1.2rem' }}>g/L en sangre</span>
               </p>
               <p style={{ margin: '0 0 1rem 0', color: '#6b7280', fontSize: '1rem', fontWeight: 'bold' }}>
-                (Equivale a {(bacEst / 2).toFixed(2)} mg/L en aire)
+                (Equivale a {(bacEst / 2).toFixed(3)} mg/L en aire)
               </p>
               <p className={styles.bacDisclaimer}>
-                *Cálculo teórico (Fórmula de Widmark). La única tasa segura para conducir es 0.0 g/L. No utilices este dato para tomar decisiones de riesgo.
+                *Cálculo biológico estimado (Fórmula de Widmark con absorción diferida de 45 min). La única tasa totalmente segura es 0.0.
               </p>
             </>
           )}
