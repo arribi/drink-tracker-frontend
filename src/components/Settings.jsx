@@ -4,9 +4,11 @@ import styles from './Settings.module.css'
 export default function Settings() {
   const [intervaloHoras, setIntervaloHoras] = useState('2')
 
-  // Nuevos estados para Widmark
+  // Estados para Watson
   const [peso, setPeso] = useState('')
   const [sexo, setSexo] = useState('')
+  const [edad, setEdad] = useState('')     // 👶 Nuevo
+  const [altura, setAltura] = useState('') // 📏 Nuevo
 
   useEffect(() => {
     localStorage.removeItem('intervalo_minutos')
@@ -15,11 +17,16 @@ export default function Settings() {
     if (valorHoras) setIntervaloHoras(valorHoras)
     else localStorage.setItem('intervalo_horas', '2')
 
-    // Cargar perfil físico
+    // Cargar perfil físico completo
     const valorPeso = localStorage.getItem('usuario_peso')
     const valorSexo = localStorage.getItem('usuario_sexo')
+    const valorEdad = localStorage.getItem('usuario_edad')     // 👶 Nuevo
+    const valorAltura = localStorage.getItem('usuario_altura') // 📏 Nuevo
+
     if (valorPeso) setPeso(valorPeso)
     if (valorSexo) setSexo(valorSexo)
+    if (valorEdad) setEdad(valorEdad)
+    if (valorAltura) setAltura(valorAltura)
   }, [])
 
   const handleHorasChange = async (e) => {
@@ -47,7 +54,6 @@ export default function Settings() {
     }
   }
 
-  // Manejadores del perfil físico
   const handlePesoChange = (e) => {
     const nuevoPeso = e.target.value
     setPeso(nuevoPeso)
@@ -60,18 +66,41 @@ export default function Settings() {
     localStorage.setItem('usuario_sexo', nuevoSexo)
   }
 
+  // 👶 Nuevo manejador de Edad
+  const handleEdadChange = (e) => {
+    const nuevaEdad = e.target.value
+    setEdad(nuevaEdad)
+    localStorage.setItem('usuario_edad', nuevaEdad)
+  }
+
+  // 📏 Nuevo manejador de Altura
+  const handleAlturaChange = (e) => {
+    const nuevaAltura = e.target.value
+    setAltura(nuevaAltura)
+    localStorage.setItem('usuario_altura', nuevaAltura)
+  }
+
   return (
     <div className={styles.container}>
       <h2>⚙️ Ajustes</h2>
 
       <div className={styles.formGroup}>
 
-        {/* 🧬 NUEVA SECCIÓN: PERFIL FÍSICO */}
+        {/* 🧬 SECCIÓN: PERFIL FÍSICO (ACTUALIZADA) */}
         <div className={styles.infoBoxAlcohol}>
           <h3 className={styles.infoTitleAlcohol}>⚖️ Perfil Físico</h3>
           <p className={styles.infoTextAlcohol}>
-            Para calcular tu tasa de alcoholemia estimada (BAC) mediante la <strong>fórmula de Widmark</strong>, necesitamos estos datos. Se guardan solo en tu móvil.
+            Usamos la <strong>fórmula clínica de Watson</strong> para determinar con precisión matemática cómo se distribuye el alcohol en tu cuerpo.
           </p>
+
+          <label className={styles.label}>
+            <strong>Sexo Biológico:</strong>
+            <select value={sexo} onChange={handleSexoChange} className={styles.select}>
+              <option value="">Selecciona...</option>
+              <option value="H">Hombre</option>
+              <option value="M">Mujer</option>
+            </select>
+          </label>
 
           <label className={styles.label}>
             <strong>Peso (kg):</strong>
@@ -86,26 +115,45 @@ export default function Settings() {
             />
           </label>
 
+          {/* 👶 NUEVO INPUT: EDAD */}
           <label className={styles.label}>
-            <strong>Sexo Biológico:</strong>
-            <select value={sexo} onChange={handleSexoChange} className={styles.select}>
-              <option value="">Selecciona...</option>
-              <option value="H">Hombre</option>
-              <option value="M">Mujer</option>
-            </select>
+            <strong>Edad (años):</strong>
+            <input
+              type="number"
+              value={edad}
+              onChange={handleEdadChange}
+              placeholder="Ej: 28"
+              className={styles.input}
+              min="18"
+              max="100"
+            />
+          </label>
+
+          {/* 📏 NUEVO INPUT: ALTURA */}
+          <label className={styles.label}>
+            <strong>Altura (cm):</strong>
+            <input
+              type="number"
+              value={altura}
+              onChange={handleAlturaChange}
+              placeholder="Ej: 175"
+              className={styles.input}
+              min="100"
+              max="250"
+            />
           </label>
         </div>
 
         <hr className={styles.divider} />
 
-        {/* SECCIÓN AGUA (Original) */}
+        {/* SECCIÓN AGUA */}
         <label className={styles.label}>
           <strong>Frecuencia de agua:</strong>
           <select value={intervaloHoras} onChange={handleHorasChange} className={styles.select}>
             <option value="1">Cada 1 hora</option>
             <option value="2">Cada 2 horas (Recomendado)</option>
             <option value="3">Cada 3 horas</option>
-            <option value="4">Cada 4 horas</option>
+            <option value="4">Cada 4 hours</option>
           </select>
         </label>
 

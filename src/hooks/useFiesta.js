@@ -1,5 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { calcularMinsPerUbe } from '../utils/alcoholMath'
+
+/**
+ * 📬 Envía una notificación local en el dispositivo del usuario
+ * Se extrae fuera del hook para no interferir con el ciclo de vida de React
+ */
+const lanzarNotificacionViaLibre = () => {
+  if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+    navigator.serviceWorker.ready.then((registro) => {
+      registro.showNotification('🟢 ¡Vía Libre!', {
+        body: 'Tu hígado ha terminado de procesar todo el alcohol. ¡Estás a cero! 🥳',
+        icon: '/vite.svg',
+        vibrate: [200, 100, 200]
+      })
+    })
+  }
+}
 
 export const useFiesta = () => {
   const [timeLeft, setTimeLeft] = useState(0)
@@ -7,13 +23,39 @@ export const useFiesta = () => {
   const [history, setHistory] = useState([])
   const [showSummary, setShowSummary] = useState(localStorage.getItem('fiesta_terminada') === 'true')
 
+  // Datos del perfil físico almacenados localmente
   const peso = parseFloat(localStorage.getItem('usuario_peso'))
   const sexo = localStorage.getItem('usuario_sexo')
+  const edad = parseInt(localStorage.getItem('usuario_edad') || '0', 10)
+  const altura = parseFloat(localStorage.getItem('usuario_altura') || '0')
 
+  /**
+   * ⏱️ Calcula los milisegundos restantes hasta estar sobrio
+   * Envolviendo en useCallback evitamos recrear la función y bucles infinitos
+   */
+  const calculateTimeLeft = useCallback(() => {
+    const targetTime = localStorage.getItem('hora_objetivo')
+    if (targetTime) {
+      const difference = parseInt(targetTime, 10) - Date.now()
+      if (difference > 0) {
+        setTimeLeft(difference)
+        setIsActive(true)
+      } else {
+        setTimeLeft(0)
+        setIsActive(false)
+        localStorage.removeItem('hora_objetivo')
+        lanzarNotificacionViaLibre()
+      }
+    }
+  }, [])
+
+  /**
+   * 🔄 Efecto inicial que arranca el segundero y gestiona el auto-reset
+   */
   useEffect(() => {
     let savedHistory = JSON.parse(localStorage.getItem('historial_bebidas') || '[]')
 
-    // 🧠 AUTO-RESET: Limpieza automática de 12 horas
+    // AUTO-RESET: Limpieza automática tras 12 horas de inactividad
     if (savedHistory.length > 0) {
       const ultimaBebidaMs = savedHistory[savedHistory.length - 1].id
       const doceHorasEnMs = 12 * 60 * 60 * 1000
@@ -33,38 +75,14 @@ export const useFiesta = () => {
 
     const timer = setInterval(calculateTimeLeft, 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [calculateTimeLeft])
 
-  const calculateTimeLeft = () => {
-    const targetTime = localStorage.getItem('hora_objetivo')
-    if (targetTime) {
-      const difference = parseInt(targetTime, 10) - Date.now()
-      if (difference > 0) {
-        setTimeLeft(difference)
-        setIsActive(true)
-      } else {
-        setTimeLeft(0)
-        setIsActive(false)
-        localStorage.removeItem('hora_objetivo')
-        lanzarNotificacionViaLibre()
-      }
-    }
-  }
-
-  const lanzarNotificacionViaLibre = () => {
-    if ('serviceWorker' in navigator && Notification.permission === 'granted') {
-      navigator.serviceWorker.ready.then((registro) => {
-        registro.showNotification('🟢 ¡Vía Libre!', {
-          body: 'Tu hígado ha terminado de procesar todo el alcohol. ¡Estás a cero! 🥳',
-          icon: '/vite.svg',
-          vibrate: [200, 100, 200]
-        })
-      })
-    }
-  }
-
+  /**
+   * ➕ Registra una nueva consumición en el historial y actualiza el temporizador
+   */
   const handleAddDrink = async (nombreBebida, ubes) => {
-    const minsPerUbe = calcularMinsPerUbe(peso, sexo)
+    // Cálculo preciso del tiempo por UBE usando Watson (peso, sexo, edad, altura)
+    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura)
     const tiempoBebidaMs = ubes * minsPerUbe * 60 * 1000
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
     const ahora = Date.now()
@@ -86,6 +104,7 @@ export const useFiesta = () => {
 
     calculateTimeLeft()
 
+    // Programar notificación Push en servidor si el servicio está disponible
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registro = await navigator.serviceWorker.ready
@@ -97,10 +116,15 @@ export const useFiesta = () => {
             body: JSON.stringify({ endpoint: suscripcionExistente.endpoint, minutos: minutosTotalesRestantes })
           })
         }
-      } catch (e) { console.error('Error al delegar push:', e) }
+      } catch (e) {
+        console.error('Error al delegar push:', e)
+      }
     }
   }
 
+  /**
+   * ↩️ Elimina la última bebida registrada del historial y recalcula los tiempos
+   */
   const handleUndoLastDrink = async () => {
     if (history.length === 0) return
 
@@ -109,7 +133,7 @@ export const useFiesta = () => {
     setHistory(updatedHistory)
     localStorage.setItem('historial_bebidas', JSON.stringify(updatedHistory))
 
-    const minsPerUbe = calcularMinsPerUbe(peso, sexo)
+    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura)
     const tiempoBebidaMs = (lastDrink.ubes || 1) * minsPerUbe * 60 * 1000
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
     const ahora = Date.now()
@@ -128,6 +152,8 @@ export const useFiesta = () => {
     }
 
     const minsRestantes = Math.max(0, Math.round((newTargetTime - ahora) / (60 * 1000)))
+
+    // Actualizar el temporizador en el backend tras deshacer la acción
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registro = await navigator.serviceWorker.ready
@@ -139,15 +165,23 @@ export const useFiesta = () => {
             body: JSON.stringify({ endpoint: suscripcion.endpoint, minutos: minsRestantes })
           })
         }
-      } catch (e) { console.error('Error al actualizar servidor tras deshacer:', e) }
+      } catch (e) {
+        console.error('Error al actualizar servidor tras deshacer:', e)
+      }
     }
   }
 
+  /**
+   * 🏁 Da por terminada la noche de fiesta y congela el estado para el resumen
+   */
   const handleEndParty = () => {
     setShowSummary(true)
     localStorage.setItem('fiesta_terminada', 'true')
   }
 
+  /**
+   * 🗑️ Limpia por completo la sesión actual para empezar una nueva de cero
+   */
   const handleReset = () => {
     localStorage.removeItem('hora_objetivo')
     localStorage.removeItem('historial_bebidas')
@@ -158,7 +192,6 @@ export const useFiesta = () => {
     setShowSummary(false)
   }
 
-  // Devolvemos todo lo que la interfaz visual necesita para funcionar
   return {
     timeLeft,
     isActive,
@@ -166,6 +199,8 @@ export const useFiesta = () => {
     showSummary,
     peso,
     sexo,
+    edad,
+    altura,
     handleAddDrink,
     handleUndoLastDrink,
     handleEndParty,

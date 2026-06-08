@@ -1,22 +1,33 @@
-/**
- * Calcula cuántos minutos tarda el cuerpo en procesar 1 UBE (10g de alcohol)
- */
-export const calcularMinsPerUbe = (peso, sexo) => {
-  if (!peso || !sexo) return 60;
-  const r = sexo === 'M' ? 0.55 : 0.68;
-  const horas = 10 / (0.15 * peso * r);
-  return Math.round(horas * 60);
-};
+export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0) => {
+  if (!peso || !sexo) return 40;
 
+  // 🧪 Si tenemos los datos de Watson, calculamos el tiempo según el Agua Corporal Total (TBW)
+  if (edad > 0 && altura > 0) {
+    let tbw = 0;
+    if (sexo === 'H') {
+      tbw = 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso);
+    } else {
+      tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
+    }
+
+    // Convertimos la tasa de eliminación clínica (0.15 g/L por hora) al tiempo por UBE
+    const mins = (8 / (tbw * 0.15)) * 60;
+    return Math.round(mins);
+  }
+
+  // 🪵 Fallback clásico si no hay edad/altura
+  const r = sexo === 'M' ? 0.55 : 0.68;
+  const gramosPorHora = peso * 0.15 * r;
+  const mins = (10 / gramosPorHora) * 60;
+  return Math.round(mins);
+};
 /**
- * Calcula la Tasa de Alcoholemia Estimada (g/L)
- * Acepta 'customAhora' para simular cálculos en el futuro
+ * FÓRMULA DE WATSON + WIDMARK COMBINADAS
  */
-export const calcularBacEst = (history, peso, sexo, minsPerUbe, customAhora = null) => {
+export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, customAhora = null) => {
   if (!history || history.length === 0 || !peso || !sexo) return 0;
 
-  const r = sexo === 'M' ? 0.55 : 0.68;
-  const ahora = customAhora || Date.now(); // ⏱️ Aquí aplicamos el viaje en el tiempo
+  const ahora = customAhora || Date.now();
   const primeraBebidaMs = history[0].id;
   const horasTranscurridas = Math.max(0, (ahora - primeraBebidaMs) / (1000 * 60 * 60));
 
@@ -35,18 +46,33 @@ export const calcularBacEst = (history, peso, sexo, minsPerUbe, customAhora = nu
     }
   });
 
+  // SI TENEMOS EDAD Y ALTURA -> APLICAMOS WATSON (Estándar Clínico)
+  if (edad > 0 && altura > 0) {
+    let tbw = 0; // Total Body Water (Agua corporal total en litros)
+
+    if (sexo === 'H') {
+      tbw = 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso);
+    } else {
+      tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
+    }
+
+    // El alcohol en sangre se calcula dividiendo los gramos entre el volumen de agua de la sangre.
+    // Como la sangre tiene un 80% de agua, adaptamos el ACT clínico: BAC = (Gramos * 0.80) / ACT
+    const calculo = (gramosAbsorbidosTotales * 0.80 / tbw) - (0.15 * horasTranscurridas);
+    return Math.max(0, calculo);
+  }
+
+  // FALLBACK: Si no hay edad/altura, usamos Widmark clásico
+  const r = sexo === 'M' ? 0.55 : 0.68;
   const calculo = (gramosAbsorbidosTotales / (peso * r)) - (0.15 * horasTranscurridas);
   return Math.max(0, calculo);
 };
 
-/**
- * 📈 NUEVO: Compara la tasa actual con la de dentro de 1 minuto para ver la tendencia
- */
-export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe) => {
+export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0) => {
   if (!history || history.length === 0 || !peso || !sexo) return 'estable';
 
-  const bacActual = calcularBacEst(history, peso, sexo, minsPerUbe, Date.now());
-  const bacFuturo = calcularBacEst(history, peso, sexo, minsPerUbe, Date.now() + 60000); // +1 minuto
+  const bacActual = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, Date.now());
+  const bacFuturo = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, Date.now() + 60000);
 
   if (bacActual === 0 && bacFuturo === 0) return 'estable';
   if (bacFuturo > bacActual) return 'subiendo';
@@ -55,27 +81,9 @@ export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe) => {
   return 'estable';
 };
 
-/**
- * Devuelve el nivel de gravedad de la resaca estimada
- */
-export const obtenerDiagnosticoResaca = (history, totalUbesConsumidas, minsPerUbe) => {
-  if (!history || history.length === 0) {
-    return { texto: "👼 Modo Ángel: No has bebido nada. Mañana estarás resplandeciente.", color: "#22c55e" };
-  }
-
-  const primeraBebidaMs = history[0].id;
-  const ahoraMs = Date.now();
-  const horasTranscurridas = Math.max(0, (ahoraMs - primeraBebidaMs) / (1000 * 60 * 60));
-  const ubesMetabolizadas = horasTranscurridas * (60 / minsPerUbe);
-  const cargaActual = Math.max(0, totalUbesConsumidas - ubesMetabolizadas);
-
-  if (cargaActual <= 0.5) {
-    return { texto: "🦸‍♂️ Cero resaca: Ritmo clínico perfecto. Tu cuerpo ha procesado casi todo sobre la marcha. Mañana madrugas y te ríes de los demás.", color: "#22c55e" };
-  } else if (cargaActual <= 2.5) {
-    return { texto: "🕺 Modo supervivencia: Hay un pequeño atasco metabólico, pero nada grave. Dos vasos de agua antes de dormir y mañana estarás al 90%.", color: "#eab308" };
-  } else if (cargaActual <= 5) {
-    return { texto: "🧟‍♂️ Resaca importante: Te has venido bastante arriba. El hígado está pidiendo la hora. Mañana maratón de series en el sofá.", color: "#f97316" };
-  } else {
-    return { texto: "🪦 Resacón brutal: La ciencia no hace milagros. Has saturado el sistema por completo. Ve redactando tu testamento y cancela los planes de mañana.", color: "#ef4444" };
-  }
+export const obtenerDiagnosticoResaca = (history, totalUbes, minsPerUbe) => {
+  if (totalUbes === 0) return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
+  if (totalUbes <= 3) return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
+  if (totalUbes <= 7) return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
+  return { texto: 'Peligro de resaca histórica. Ve buscando un ibuprofeno y mucha agua. 💀', color: '#ef4444' };
 };
