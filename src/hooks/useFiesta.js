@@ -28,6 +28,7 @@ export const useFiesta = () => {
   const sexo = localStorage.getItem('usuario_sexo')
   const edad = parseInt(localStorage.getItem('usuario_edad') || '0', 10)
   const altura = parseFloat(localStorage.getItem('usuario_altura') || '0')
+  const tolerancia = localStorage.getItem('usuario_tolerancia') || 'normal'
 
   /**
    * ⏱️ Calcula los milisegundos restantes hasta estar sobrio
@@ -82,7 +83,7 @@ export const useFiesta = () => {
    */
   const handleAddDrink = async (nombreBebida, ubes) => {
     // Cálculo preciso del tiempo por UBE usando Watson (peso, sexo, edad, altura)
-    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura)
+    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura, tolerancia)
     const tiempoBebidaMs = ubes * minsPerUbe * 60 * 1000
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
     const ahora = Date.now()
@@ -133,7 +134,7 @@ export const useFiesta = () => {
     setHistory(updatedHistory)
     localStorage.setItem('historial_bebidas', JSON.stringify(updatedHistory))
 
-    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura)
+    const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura, tolerancia)
     const tiempoBebidaMs = (lastDrink.ubes || 1) * minsPerUbe * 60 * 1000
     const currentTarget = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
     const ahora = Date.now()
@@ -201,6 +202,7 @@ export const useFiesta = () => {
     sexo,
     edad,
     altura,
+    tolerancia,
     handleAddDrink,
     handleUndoLastDrink,
     handleEndParty,

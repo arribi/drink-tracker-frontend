@@ -1,7 +1,17 @@
-export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0) => {
+/**
+ * Traduce el string de tolerancia a la tasa de eliminación metabólica
+ */
+const obtenerTasaEliminacion = (tolerancia) => {
+  if (tolerancia === 'baja') return 0.12;
+  if (tolerancia === 'alta') return 0.18;
+  return 0.15; // normal (por defecto)
+};
+
+export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0, tolerancia = 'normal') => {
   if (!peso || !sexo) return 40;
 
-  // 🧪 Si tenemos los datos de Watson, calculamos el tiempo según el Agua Corporal Total (TBW)
+  const tasa = obtenerTasaEliminacion(tolerancia);
+
   if (edad > 0 && altura > 0) {
     let tbw = 0;
     if (sexo === 'H') {
@@ -10,21 +20,17 @@ export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0) => {
       tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
     }
 
-    // Convertimos la tasa de eliminación clínica (0.15 g/L por hora) al tiempo por UBE
-    const mins = (8 / (tbw * 0.15)) * 60;
+    const mins = (8 / (tbw * tasa)) * 60;
     return Math.round(mins);
   }
 
-  // 🪵 Fallback clásico si no hay edad/altura
   const r = sexo === 'M' ? 0.55 : 0.68;
-  const gramosPorHora = peso * 0.15 * r;
+  const gramosPorHora = peso * tasa * r;
   const mins = (10 / gramosPorHora) * 60;
   return Math.round(mins);
 };
-/**
- * FÓRMULA DE WATSON + WIDMARK COMBINADAS
- */
-export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, customAhora = null) => {
+
+export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, tolerancia = 'normal', customAhora = null) => {
   if (!history || history.length === 0 || !peso || !sexo) return 0;
 
   const ahora = customAhora || Date.now();
@@ -46,33 +52,30 @@ export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura
     }
   });
 
-  // SI TENEMOS EDAD Y ALTURA -> APLICAMOS WATSON (Estándar Clínico)
-  if (edad > 0 && altura > 0) {
-    let tbw = 0; // Total Body Water (Agua corporal total en litros)
+  const tasa = obtenerTasaEliminacion(tolerancia);
 
+  if (edad > 0 && altura > 0) {
+    let tbw = 0;
     if (sexo === 'H') {
       tbw = 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso);
     } else {
       tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
     }
 
-    // El alcohol en sangre se calcula dividiendo los gramos entre el volumen de agua de la sangre.
-    // Como la sangre tiene un 80% de agua, adaptamos el ACT clínico: BAC = (Gramos * 0.80) / ACT
-    const calculo = (gramosAbsorbidosTotales * 0.80 / tbw) - (0.15 * horasTranscurridas);
+    const calculo = (gramosAbsorbidosTotales * 0.80 / tbw) - (tasa * horasTranscurridas);
     return Math.max(0, calculo);
   }
 
-  // FALLBACK: Si no hay edad/altura, usamos Widmark clásico
   const r = sexo === 'M' ? 0.55 : 0.68;
-  const calculo = (gramosAbsorbidosTotales / (peso * r)) - (0.15 * horasTranscurridas);
+  const calculo = (gramosAbsorbidosTotales / (peso * r)) - (tasa * horasTranscurridas);
   return Math.max(0, calculo);
 };
 
-export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0) => {
+export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, tolerancia = 'normal') => {
   if (!history || history.length === 0 || !peso || !sexo) return 'estable';
 
-  const bacActual = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, Date.now());
-  const bacFuturo = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, Date.now() + 60000);
+  const bacActual = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia, Date.now());
+  const bacFuturo = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia, Date.now() + 60000);
 
   if (bacActual === 0 && bacFuturo === 0) return 'estable';
   if (bacFuturo > bacActual) return 'subiendo';

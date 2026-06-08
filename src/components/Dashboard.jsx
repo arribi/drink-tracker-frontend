@@ -19,6 +19,7 @@ export default function Dashboard() {
     sexo,
     edad,
     altura,
+    tolerancia,
     handleAddDrink,
     handleUndoLastDrink,
     handleEndParty,
@@ -42,11 +43,11 @@ export default function Dashboard() {
   }
 
   // --- CÁLCULOS MATEMÁTICOS RÁPIDOS ---
-  const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura)
+  const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura, tolerancia)
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
   const diagnostico = obtenerDiagnosticoResaca(history, totalUbesConsumidas, minsPerUbe)
-  const bacEst = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura)
-  const tendenciaBac = calcularTendenciaBac(history, peso, sexo, minsPerUbe, edad, altura)
+  const bacEst = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia)
+  const tendenciaBac = calcularTendenciaBac(history, peso, sexo, minsPerUbe, edad, altura, tolerancia)
 
 
   // --- VARIABLES VISUALES ---

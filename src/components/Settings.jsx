@@ -7,8 +7,9 @@ export default function Settings() {
   // Estados para Watson
   const [peso, setPeso] = useState('')
   const [sexo, setSexo] = useState('')
-  const [edad, setEdad] = useState('')     // 👶 Nuevo
-  const [altura, setAltura] = useState('') // 📏 Nuevo
+  const [edad, setEdad] = useState('')
+  const [altura, setAltura] = useState('')
+  const [tolerancia, setTolerancia] = useState('normal')
 
   useEffect(() => {
     localStorage.removeItem('intervalo_minutos')
@@ -20,13 +21,15 @@ export default function Settings() {
     // Cargar perfil físico completo
     const valorPeso = localStorage.getItem('usuario_peso')
     const valorSexo = localStorage.getItem('usuario_sexo')
-    const valorEdad = localStorage.getItem('usuario_edad')     // 👶 Nuevo
-    const valorAltura = localStorage.getItem('usuario_altura') // 📏 Nuevo
+    const valorEdad = localStorage.getItem('usuario_edad')
+    const valorAltura = localStorage.getItem('usuario_altura')
+    const valorTolerancia = localStorage.getItem('usuario_tolerancia')
 
     if (valorPeso) setPeso(valorPeso)
     if (valorSexo) setSexo(valorSexo)
     if (valorEdad) setEdad(valorEdad)
     if (valorAltura) setAltura(valorAltura)
+    if (valorTolerancia) setTolerancia(valorTolerancia)
   }, [])
 
   const handleHorasChange = async (e) => {
@@ -66,18 +69,22 @@ export default function Settings() {
     localStorage.setItem('usuario_sexo', nuevoSexo)
   }
 
-  // 👶 Nuevo manejador de Edad
   const handleEdadChange = (e) => {
     const nuevaEdad = e.target.value
     setEdad(nuevaEdad)
     localStorage.setItem('usuario_edad', nuevaEdad)
   }
 
-  // 📏 Nuevo manejador de Altura
   const handleAlturaChange = (e) => {
     const nuevaAltura = e.target.value
     setAltura(nuevaAltura)
     localStorage.setItem('usuario_altura', nuevaAltura)
+  }
+
+  const handleToleranciaChange = (e) => {
+    const nuevaTolerancia = e.target.value
+    setTolerancia(nuevaTolerancia)
+    localStorage.setItem('usuario_tolerancia', nuevaTolerancia)
   }
 
   return (
@@ -86,7 +93,7 @@ export default function Settings() {
 
       <div className={styles.formGroup}>
 
-        {/* 🧬 SECCIÓN: PERFIL FÍSICO (ACTUALIZADA) */}
+        {/* 🧬 SECCIÓN: PERFIL FÍSICO */}
         <div className={styles.infoBoxAlcohol}>
           <h3 className={styles.infoTitleAlcohol}>⚖️ Perfil Físico</h3>
           <p className={styles.infoTextAlcohol}>
@@ -115,7 +122,6 @@ export default function Settings() {
             />
           </label>
 
-          {/* 👶 NUEVO INPUT: EDAD */}
           <label className={styles.label}>
             <strong>Edad (años):</strong>
             <input
@@ -129,7 +135,6 @@ export default function Settings() {
             />
           </label>
 
-          {/* 📏 NUEVO INPUT: ALTURA */}
           <label className={styles.label}>
             <strong>Altura (cm):</strong>
             <input
@@ -141,6 +146,15 @@ export default function Settings() {
               min="100"
               max="250"
             />
+          </label>
+
+          <label className={styles.label}>
+            <strong>Hábito de consumo:</strong>
+            <select value={tolerancia} onChange={handleToleranciaChange} className={styles.select}>
+              <option value="baja">Bajo (Bebo muy ocasionalmente)</option>
+              <option value="normal">Normal (Salgo algunos fines de semana)</option>
+              <option value="alta">Alto (Bebo de forma habitual)</option>
+            </select>
           </label>
         </div>
 
