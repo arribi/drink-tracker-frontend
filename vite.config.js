@@ -6,25 +6,32 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // Actualiza el Service Worker automáticamente
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg', 'favicon-96x96.png'],
       manifest: {
-        name: 'Drink Tracker',
-        short_name: 'Tracker',
-        description: 'Controla tu consumo con cabeza',
-        theme_color: '#ffffff', // Color de la barra de estado del móvil
+        name: 'Cero resaca',
+        short_name: 'CeroResaca',
+        description: 'Drink tracker para disfrutar al día siguiente.',
+        theme_color: '#2563eb',
         background_color: '#ffffff',
-        display: 'standalone', // Oculta la barra del navegador (apariencia nativa)
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
-          // Necesitaremos añadir iconos reales más adelante en la carpeta /public
           {
-            src: 'pwa-192x192.png',
+            src: 'web-app-manifest-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'web-app-manifest-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: 'web-app-manifest-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable' // Esto evita que Android recorte mal tu dial minimalista
           }
         ]
       }
