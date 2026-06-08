@@ -3,8 +3,6 @@ import styles from './Settings.module.css'
 
 export default function Settings() {
   const [intervaloHoras, setIntervaloHoras] = useState('2')
-
-  // Estados para Watson
   const [peso, setPeso] = useState('')
   const [sexo, setSexo] = useState('')
   const [edad, setEdad] = useState('')
@@ -13,12 +11,10 @@ export default function Settings() {
 
   useEffect(() => {
     localStorage.removeItem('intervalo_minutos')
-
     const valorHoras = localStorage.getItem('intervalo_horas')
     if (valorHoras) setIntervaloHoras(valorHoras)
     else localStorage.setItem('intervalo_horas', '2')
 
-    // Cargar perfil físico completo
     const valorPeso = localStorage.getItem('usuario_peso')
     const valorSexo = localStorage.getItem('usuario_sexo')
     const valorEdad = localStorage.getItem('usuario_edad')
@@ -57,52 +53,20 @@ export default function Settings() {
     }
   }
 
-  const handlePesoChange = (e) => {
-    const nuevoPeso = e.target.value
-    setPeso(nuevoPeso)
-    localStorage.setItem('usuario_peso', nuevoPeso)
-  }
-
-  const handleSexoChange = (e) => {
-    const nuevoSexo = e.target.value
-    setSexo(nuevoSexo)
-    localStorage.setItem('usuario_sexo', nuevoSexo)
-  }
-
-  const handleEdadChange = (e) => {
-    const nuevaEdad = e.target.value
-    setEdad(nuevaEdad)
-    localStorage.setItem('usuario_edad', nuevaEdad)
-  }
-
-  const handleAlturaChange = (e) => {
-    const nuevaAltura = e.target.value
-    setAltura(nuevaAltura)
-    localStorage.setItem('usuario_altura', nuevaAltura)
-  }
-
-  const handleToleranciaChange = (e) => {
-    const nuevaTolerancia = e.target.value
-    setTolerancia(nuevaTolerancia)
-    localStorage.setItem('usuario_tolerancia', nuevaTolerancia)
-  }
-
   return (
     <div className={styles.container}>
-      <h2>⚙️ Ajustes</h2>
+      <h2 className={styles.mainTitle}>⚙️ Ajustes</h2>
 
-      <div className={styles.formGroup}>
+      <div className={styles.card}>
+        <h3 className={styles.cardTitle}>⚖️ Perfil Físico</h3>
+        <p className={styles.cardDescription}>
+          Usamos la <strong>fórmula clínica de Watson</strong> para determinar con precisión matemática cómo se distribuye el alcohol en tu cuerpo.
+        </p>
 
-        {/* 🧬 SECCIÓN: PERFIL FÍSICO */}
-        <div className={styles.infoBoxAlcohol}>
-          <h3 className={styles.infoTitleAlcohol}>⚖️ Perfil Físico</h3>
-          <p className={styles.infoTextAlcohol}>
-            Usamos la <strong>fórmula clínica de Watson</strong> para determinar con precisión matemática cómo se distribuye el alcohol en tu cuerpo.
-          </p>
-
+        <div className={styles.gridTwo}>
           <label className={styles.label}>
-            <strong>Sexo Biológico:</strong>
-            <select value={sexo} onChange={handleSexoChange} className={styles.select}>
+            <span>Sexo Biológico</span>
+            <select value={sexo} onChange={(e) => { setSexo(e.target.value); localStorage.setItem('usuario_sexo', e.target.value); }} className={styles.select}>
               <option value="">Selecciona...</option>
               <option value="H">Hombre</option>
               <option value="M">Mujer</option>
@@ -110,73 +74,51 @@ export default function Settings() {
           </label>
 
           <label className={styles.label}>
-            <strong>Peso (kg):</strong>
-            <input
-              type="number"
-              value={peso}
-              onChange={handlePesoChange}
-              placeholder="Ej: 75"
-              className={styles.input}
-              min="30"
-              max="200"
-            />
-          </label>
-
-          <label className={styles.label}>
-            <strong>Edad (años):</strong>
-            <input
-              type="number"
-              value={edad}
-              onChange={handleEdadChange}
-              placeholder="Ej: 28"
-              className={styles.input}
-              min="18"
-              max="100"
-            />
-          </label>
-
-          <label className={styles.label}>
-            <strong>Altura (cm):</strong>
-            <input
-              type="number"
-              value={altura}
-              onChange={handleAlturaChange}
-              placeholder="Ej: 175"
-              className={styles.input}
-              min="100"
-              max="250"
-            />
-          </label>
-
-          <label className={styles.label}>
-            <strong>Hábito de consumo:</strong>
-            <select value={tolerancia} onChange={handleToleranciaChange} className={styles.select}>
-              <option value="baja">Bajo (Bebo muy ocasionalmente)</option>
-              <option value="normal">Normal (Salgo algunos fines de semana)</option>
-              <option value="alta">Alto (Bebo de forma habitual)</option>
+            <span>Hábito de consumo</span>
+            <select value={tolerancia} onChange={(e) => { setTolerancia(e.target.value); localStorage.setItem('usuario_tolerancia', e.target.value); }} className={styles.select}>
+              <option value="baja">Bajo (Ocasional)</option>
+              <option value="normal">Normal (Fines de semana)</option>
+              <option value="alta">Alto (Habitual)</option>
             </select>
           </label>
         </div>
 
-        <hr className={styles.divider} />
+        <div className={styles.gridThree}>
+          <label className={styles.label}>
+            <span>Peso (kg)</span>
+            <input type="number" value={peso} onChange={(e) => { setPeso(e.target.value); localStorage.setItem('usuario_peso', e.target.value); }} placeholder="Ej: 75" className={styles.input} min="30" max="200" />
+          </label>
 
-        {/* SECCIÓN AGUA */}
+          <label className={styles.label}>
+            <span>Edad (años)</span>
+            <input type="number" value={edad} onChange={(e) => { setEdad(e.target.value); localStorage.setItem('usuario_edad', e.target.value); }} placeholder="Ej: 28" className={styles.input} min="18" max="100" />
+          </label>
+
+          <label className={styles.label}>
+            <span>Altura (cm)</span>
+            <input type="number" value={altura} onChange={(e) => { setAltura(e.target.value); localStorage.setItem('usuario_altura', e.target.value); }} placeholder="Ej: 175" className={styles.input} min="100" max="250" />
+          </label>
+        </div>
+      </div>
+
+      <div className={styles.card}>
+        <h3 className={styles.cardTitle}>💧 Hidratación Automática</h3>
+
         <label className={styles.label}>
-          <strong>Frecuencia de agua:</strong>
+          <span>Frecuencia de las alertas</span>
           <select value={intervaloHoras} onChange={handleHorasChange} className={styles.select}>
             <option value="1">Cada 1 hora</option>
             <option value="2">Cada 2 horas (Recomendado)</option>
             <option value="3">Cada 3 horas</option>
-            <option value="4">Cada 4 hours</option>
+            <option value="4">Cada 4 horas</option>
           </select>
         </label>
 
         <div className={styles.infoBoxAgua}>
-          <p className={styles.infoTextAgua}>
-            *Nota: Las alertas de hidratación llegarán de forma automática a este dispositivo para balancear tu consumo durante la fiesta.
+          <p>
+            📌 Las alertas llegarán de forma inteligente a tu móvil para balancear tu consumo mientras mantengas un nivel de alcoholemia activo.
           </p>
         </div>
-
       </div>
     </div>
   )

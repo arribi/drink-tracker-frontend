@@ -1,257 +1,115 @@
 /* Dashboard.module.css */
 
 .container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: #f8fafc; /* Fondo suave */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-  padding: 2rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* --- CÍRCULO DEL TEMPORIZADOR --- */
-.circle {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border-width: 12px;
-  border-style: solid;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  transition: border-color 0.5s ease;
+/* --- NUEVO HEADER PREMIUM --- */
+.header { text-align: center; width: 100%; }
+.mainTitle { font-size: 1.75rem; color: #0f172a; font-weight: 800; margin-bottom: 0.5rem; margin-top: 0; }
+.statusBadge {
+  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
+  background-color: #ffffff; border-radius: 99px; border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03); font-weight: 600; font-size: 0.95rem; color: #1e293b;
+}
+.statusDot { width: 12px; height: 12px; border-radius: 50%; transition: background-color 0.3s ease; }
+
+/* --- CONTENEDOR DEL TEMPORIZADOR --- */
+.timerCardWrapper {
+  background: #ffffff; border-radius: 20px; padding: 2rem 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;
+  display: flex; justify-content: center; align-items: center; width: 100%; box-sizing: border-box;
 }
 
-/* --- CÍRCULO DEL TEMPORIZADOR DINÁMICO --- */
+/* --- CÍRCULO DEL TEMPORIZADOR DINÁMICO (Tus clases originales) --- */
 .circle {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border: none; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  position: relative; width: 220px; height: 220px; border-radius: 50%; border: none; 
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   transition: transform 0.2s ease;
 }
-
-/* El círculo interior blanco para ahuecar el centro */
 .circle::before {
-  content: "";
-  position: absolute;
-  inset: 12px; /* Grosor de la barra (12px) */
-  background-color: white;
-  border-radius: 50%;
-  z-index: 1;
+  content: ""; position: absolute; inset: 12px; background-color: white; border-radius: 50%; z-index: 1;
 }
+.circleContent { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
 
-/* Contenedor del texto (por encima del círculo blanco) */
-.circleContent {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* --- ANIMACIÓN DE LATIDO (Últimos 15 minutos) --- */
-.pulseRing {
-  animation: pulseShadow 2s infinite;
-}
-
-.pulseText {
-  color: #ef4444; /* El texto se vuelve rojo para alertar */
-  animation: pulseScale 2s infinite;
-}
-
+/* ANIMACIÓN DE LATIDO */
+.pulseRing { animation: pulseShadow 2s infinite; }
+.pulseText { color: #ef4444; animation: pulseScale 2s infinite; }
 @keyframes pulseShadow {
   0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
   70% { box-shadow: 0 0 0 20px rgba(249, 115, 22, 0); }
   100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
 }
-
 @keyframes pulseScale {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
 
-.timerText {
-  font-size: 3.2rem;
-  font-weight: bold;
-  margin: 0;
-  color: #1f2937;
-  font-variant-numeric: tabular-nums;
-}
+.timerText { font-size: 3.2rem; font-weight: bold; margin: 0; color: #1f2937; font-variant-numeric: tabular-nums; }
+.timerLabel { color: #6b7280; margin-top: 0.5rem; }
 
-.timerLabel {
-  color: #6b7280;
-  margin-top: 0.5rem;
-}
-
-/* --- BOTONES DE BEBIDAS --- */
+/* --- BOTONES DE BEBIDAS (Tus clases originales, diseño mejorado) --- */
 .gridContainer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-  width: 100%;
-  max-width: 340px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; width: 100%;
 }
-
 .drinkButton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 1rem;
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-  transition: transform 0.1s ease, filter 0.1s ease;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: 0.4rem; padding: 1.25rem 1rem; color: white; border: none; border-radius: 16px;
+  font-weight: bold; font-size: 1.05rem; cursor: pointer; text-align: left;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08); transition: all 0.2s ease;
 }
+.drinkButton:active { transform: scale(0.95); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.drinkButton:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
 
-/* 🌟 Efecto táctil para móvil */
-.drinkButton:active, .undoButton:active, .endButton:active, .resetButton:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
-}
-
-/* Clases específicas para cada bebida */
-.drinkSuave { background-color: #fcd34d; color: #78350f; }
+/* Colores vibrantes modernos */
+.drinkSuave { background-color: #fbbf24; color: #78350f; }
 .drinkCana { background-color: #60a5fa; }
 .drinkFuerte { background-color: #f97316; }
 .drinkLata { background-color: #3b82f6; }
 .drinkCopa { background-color: #ec4899; }
 
 .ubeTag {
-  font-size: 0.75rem;
-  background-color: rgba(0,0,0,0.2);
-  padding: 0.2rem 0.5rem;
-  border-radius: 8px;
-  font-weight: normal;
+  font-size: 0.8rem; background-color: rgba(255,255,255,0.25); padding: 0.25rem 0.6rem;
+  border-radius: 8px; font-weight: 600; color: inherit;
 }
-.ubeTagDark {
-  background-color: rgba(0,0,0,0.1); /* Para el chupito suave que tiene fondo claro */
+.ubeTagDark { background-color: rgba(0,0,0,0.1); }
+
+/* --- BACCARD Y PANTALLA DE RESUMEN --- */
+.bacCard, .summaryCard {
+  background-color: #ffffff; border-radius: 16px; padding: 1.5rem; margin-top: 0.5rem;
+  border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); width: 100%; box-sizing: border-box;
 }
+.bacTitle { font-size: 1.1rem; color: #374151; margin: 0 0 0.5rem 0; font-weight: bold; }
+.bacValue { font-size: 3rem; font-weight: 900; margin: 0.5rem 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+.bacDisclaimer { font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.4; }
+.bacMissing { font-size: 0.95rem; color: #4b5563; margin: 0; background-color: #fffbeb; padding: 1rem; border-radius: 8px; border-left: 4px solid #fbbf24; }
 
-/* --- SECCIÓN DE HISTORIAL --- */
-.historySection {
-  width: 100%;
-  max-width: 340px;
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+.summaryTotal { font-size: 1.4rem; margin: 0; color: #0f172a; font-weight: 800;}
+.diagnosticoBox { padding: 1rem; border-radius: 12px; background-color: #f8fafc; border-left: 4px solid #3b82f6; text-align: left; margin-top: 1rem;}
+.diagnosticoText { color: #334155; margin: 0; line-height: 1.5; font-size: 0.95rem;}
 
-.historyTitle {
-  margin: 0 0 0.5rem 0;
-  color: #4b5563;
-  font-size: 1.1rem;
-}
+/* --- SECCIÓN DE HISTORIAL Y BOTONES DE ACCIÓN --- */
+.historySection { width: 100%; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.historyTitle { margin: 0 0 0.5rem 0; color: #475569; font-size: 1.1rem; font-weight: 700; }
 
-.list {
-  list-style: none;
-  background-color: white;
-  border-radius: 12px;
-  padding: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  margin: 0;
-}
+.list { list-style: none; background-color: #ffffff; border-radius: 16px; padding: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin: 0; border: 1px solid #f1f5f9; }
+.listItem { display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #334155; font-weight: 500;}
+.listItem:last-child { border-bottom: none; }
+.timeText { color: #94a3b8; font-weight: 400;}
 
-.listItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.8rem;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 0.95rem;
-}
-.listItem:last-child {
-  border-bottom: none; /* Quitamos la línea al último elemento */
-}
-
-.timeText { color: #9ca3af; }
-
-/* --- BOTONES DE ACCIÓN --- */
-.actionGroup { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; }
-.undoButton { padding: 1rem; background-color: #9ca3af; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-.endButton { padding: 1rem; background-color: #ef4444; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-.resetButton { padding: 1rem 2rem; background-color: #22c55e; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; max-width: 340px; margin-top: 0.5rem; }
-
-/* --- PANTALLA DE RESUMEN --- */
-.summaryCard {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  width: 100%;
-  max-width: 340px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.summaryTotal { font-size: 1.4rem; margin: 0; }
-
-.diagnosticoBox {
-  padding: 1rem;
-  border-radius: 12px;
-  background-color: #f9fafb;
-  border-left-width: 5px;
-  border-left-style: solid;
-  text-align: left;
-}
-
-.diagnosticoText {
-  color: #1f2937;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.bacCard {
-  background-color: #f9fafb;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1.5rem;
-  border: 1px solid #e5e7eb;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.bacTitle {
-  font-size: 1.1rem;
-  color: #374151;
-  margin: 0 0 0.5rem 0;
-  font-weight: bold;
-}
-
-.bacValue {
-  font-size: 3rem;
-  font-weight: 900;
-  margin: 0.5rem 0;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-}
-
-.bacDisclaimer {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.bacMissing {
-  font-size: 0.95rem;
-  color: #4b5563;
-  margin: 0;
-  background-color: #fef3c7;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid #f59e0b;
-}
+.actionGroup { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; margin-top: 1rem; }
+.undoButton { padding: 1rem; background-color: #f1f5f9; color: #475569; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s;}
+.undoButton:active { background-color: #e2e8f0; }
+.endButton { padding: 1rem; background-color: #fee2e2; color: #ef4444; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s;}
+.endButton:active { background-color: #fca5a5; }
+.resetButton { padding: 1rem 2rem; background-color: #22c55e; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 0.5rem; transition: all 0.2s;}
+.resetButton:active { background-color: #16a34a; }

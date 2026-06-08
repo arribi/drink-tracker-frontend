@@ -61,27 +61,43 @@ export default function Dashboard() {
   // Si la fiesta terminó, mostramos solo la pantalla de resumen
   if (showSummary) {
     return (
-      <PartySummary
-        totalUbesConsumidas={totalUbesConsumidas}
-        diagnostico={diagnostico}
-        history={history}
-        handleReset={handleReset}
-      />
+      <div className={styles.container}>
+        <PartySummary
+          totalUbesConsumidas={totalUbesConsumidas}
+          diagnostico={diagnostico}
+          history={history}
+          handleReset={handleReset}
+        />
+      </div>
     )
   }
 
   // Interfaz principal activa
   return (
     <div className={styles.container}>
-      <h2>{isActive ? '🟠 En proceso' : '🟢 Vía libre'}</h2>
 
-      <TimerCircle
-        isActive={isActive}
-        isPulsing={isPulsing}
-        ringColor={ringColor}
-        porcentajeProgreso={porcentajeProgreso}
-        formattedTime={formatTime(timeLeft)}
-      />
+      {/* 🌟 HEADER PREMIUM */}
+      <header className={styles.header}>
+        <h1 className={styles.mainTitle}>Cero Resaca</h1>
+        <div className={styles.statusBadge}>
+          <div
+            className={styles.statusDot}
+            style={{ backgroundColor: isActive ? '#f97316' : '#4ade80' }}
+          />
+          <span>{isActive ? 'En proceso' : 'Vía libre'}</span>
+        </div>
+      </header>
+
+      {/* 🌟 TARJETA BLANCA PARA EL TEMPORIZADOR */}
+      <div className={styles.timerCardWrapper}>
+        <TimerCircle
+          isActive={isActive}
+          isPulsing={isPulsing}
+          ringColor={ringColor}
+          porcentajeProgreso={porcentajeProgreso}
+          formattedTime={formatTime(timeLeft)}
+        />
+      </div>
 
       <DrinkGrid handleAddDrink={handleAddDrink} />
 
@@ -93,7 +109,7 @@ export default function Dashboard() {
             bacEst={bacEst}
             bacColor={bacColor}
             tendencia={tendenciaBac}
-            edad={edad}     // 👈 Pásaselo también (por si acaso)
+            edad={edad}
             altura={altura}
           />
 

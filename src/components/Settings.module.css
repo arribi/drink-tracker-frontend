@@ -1,98 +1,110 @@
-/* Settings.module.css */
-
 .container {
-  padding: 2rem;
+  max-width: 550px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.formGroup {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.mainTitle {
+  font-size: 1.75rem;
+  color: #0f172a;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f1f5f9;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  color: #1e293b;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.cardDescription {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gridThree {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
 }
 
 .label {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-  color: #1f2937;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-.select {
-  padding: 0.8rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  cursor: pointer;
+.input, .select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #334155;
+  background-color: #f8fafc;
+  transition: all 0.2s ease-in-out;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none; /* Elimina estilos feos de select nativos */
 }
 
-/* Efecto al tocar/desplegar el selector */
-.select:focus {
+/* Flechita sutil personalizada para los select */
+.select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3cpolyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2rem;
+}
+
+.input:focus, .select:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
-.divider {
-  border: none;
-  border-top: 1px solid #e5e7eb;
+.infoBoxAgua {
+  background-color: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 0.25rem 1rem;
+  border-radius: 4px 12px 12px 4px;
+  margin-top: 1.25rem;
+}
+
+.infoBoxAgua p {
+  font-size: 0.85rem;
+  color: #1e40af;
+  line-height: 1.4;
   margin: 0.5rem 0;
 }
 
-/* --- SECCIÓN ALCOHOL --- */
-.infoBoxAlcohol {
-  padding: 1.5rem;
-  background-color: #fef3c7;
-  border-radius: 12px;
-  border-left: 5px solid #f59e0b;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.infoTitleAlcohol {
-  margin: 0;
-  color: #92400e;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.infoTextAlcohol {
-  color: #b45309;
-  font-size: 0.95rem;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* --- SECCIÓN AGUA --- */
-.infoBoxAgua {
-  padding: 1rem;
-  background-color: #e0f2fe;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
-}
-
-.infoTextAgua {
-  color: #0369a1;
-  font-size: 0.9rem;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.input {
-  padding: 0.8rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+/* Adaptabilidad para pantallas muy pequeñas (móviles antiguos) */
+@media (max-width: 400px) {
+  .gridTwo, .gridThree {
+    grid-template-columns: 1fr;
+  }
 }
