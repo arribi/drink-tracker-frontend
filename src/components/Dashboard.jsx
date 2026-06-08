@@ -25,9 +25,18 @@ export default function Dashboard() {
 
   const formatTime = (ms) => {
     const totalSeconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
+    const totalMinutes = Math.floor(totalSeconds / 60)
+
+    // Si sobrepasa la hora, formateamos en Horas y Minutos
+    if (totalMinutes >= 60) {
+      const hours = Math.floor(totalMinutes / 60)
+      const minutes = totalMinutes % 60
+      return `${hours}h ${minutes}m`
+    }
+
+    // Si es menos de una hora, dejamos el MM:SS clásico para ver los segundos bajar
     const seconds = totalSeconds % 60
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    return `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
   // --- CÁLCULOS MATEMÁTICOS RÁPIDOS ---
