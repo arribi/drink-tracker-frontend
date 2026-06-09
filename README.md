@@ -130,7 +130,7 @@ El directorio `dist/` contiene la app lista para servir desde cualquier CDN o se
 La app utiliza **fórmulas científicas estándar** para estimar la tasa de alcoholemia:
 
 - **Widmark (estándar):** Basada en peso y sexo
-- **Watson (mejorada):** Considera también edad y altura para mayor precisión
+- **Watson (mejorada):** Considera también edad, altura y tolerancia para mayor precisión
 - **Tiempo de absorción:** Se asume una absorción gradual en los primeros 45 minutos
 - **Metabolización:** El hígado procesa aproximadamente 1 UBE por hora
 - **Tendencia:** Muestra si tu BAC está subiendo (absorbiendo) o bajando (metabolizándose)
@@ -162,18 +162,6 @@ La app está totalmente optimizada como Progressive Web App:
 **iOS (Safari):**
 1. Abre la app en Safari
 2. Toca Compartir → "Añadir a pantalla de inicio"
-
----
-
-## 🛠️ Linting y validación
-
-```bash
-# Ejecutar linter
-npm run lint
-
-# Corregir problemas de linting
-npm run lint -- --fix
-```
 
 ---
 
