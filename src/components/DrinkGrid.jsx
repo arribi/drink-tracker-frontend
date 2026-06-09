@@ -19,7 +19,7 @@ export default function DrinkGrid({ handleAddDrink }) {
         <span>🍺 Lata / Tercio</span> <span className={styles.ubeTag}>1.5 UBEs</span>
       </button>
       <button className={`${styles.drinkButton} ${styles.drinkCopa}`} onClick={() => handleAddDrink('Combinado / Copa', 2)}>
-        <span>🍹 Combinado / Copa Larga</span> <span className={styles.ubeTag}>2 UBEs</span>
+        <span>🍹 Combinado / Copa</span> <span className={styles.ubeTag}>2 UBEs</span>
       </button>
     </div>
   )

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import Settings from './components/Settings'
+import './App.css'
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
@@ -19,6 +20,15 @@ function urlBase64ToUint8Array(base64String) {
 function App() {
   // Estado para controlar qué pantalla vemos
   const [currentView, setCurrentView] = useState('dashboard')
+  const [isSubscribed, setIsSubscribed] = useState(false)
+
+  // Cargar estado de suscripción desde localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('isNotificationsSubscribed')
+    if (saved === 'true') {
+      setIsSubscribed(true)
+    }
+  }, [])
 
   // LÓGICA PARA SOLICITAR PERMISO Y GUARDAR EN MONGO
   const suscribirUsuario = async () => {
@@ -52,6 +62,10 @@ function App() {
 
       const datos = await respuesta.json();
       console.log('Respuesta del backend:', datos);
+      
+      // Guardar estado y actualizar UI
+      localStorage.setItem('isNotificationsSubscribed', 'true')
+      setIsSubscribed(true)
       alert('¡Dispositivo vinculado con éxito en MongoDB! 🔔');
 
     } catch (error) {
@@ -75,6 +89,7 @@ function App() {
       {/* Barra de navegación inferior */}
       <nav style={styles.bottomNav}>
         <button
+          className="nav-button"
           style={{ ...styles.navBtn, color: currentView === 'dashboard' ? '#3b82f6' : '#666' }}
           onClick={() => setCurrentView('dashboard')}
         >
@@ -83,13 +98,16 @@ function App() {
 
         {/* 🔔 BOTÓN INTEGRADO: Activar Notificaciones */}
         <button
-          style={{ ...styles.navBtn, color: '#f97316' }}
+           className="nav-button"
+          style={{ ...styles.navBtn, color: isSubscribed ? '#3b82f6' : '#666' }}
           onClick={suscribirUsuario}
+           title={isSubscribed ? 'Notificaciones activadas' : 'Activar notificaciones'}
         >
-          🔔<br />Activar
+          🔔<br />{isSubscribed ? 'Activo' : 'Activar'}
         </button>
 
         <button
+          className="nav-button"
           style={{ ...styles.navBtn, color: currentView === 'settings' ? '#3b82f6' : '#666' }}
           onClick={() => setCurrentView('settings')}
         >
@@ -105,7 +123,21 @@ const styles = {
   header: { backgroundColor: '#1e293b', color: 'white', padding: '1rem', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 10 },
   mainArea: { flex: 1, overflowY: 'auto', position: 'relative' },
   bottomNav: { display: 'flex', justifyContent: 'space-around', backgroundColor: 'white', borderTop: '1px solid #e5e7eb', padding: '0.8rem 0', paddingBottom: 'env(safe-area-inset-bottom)' },
-  navBtn: { background: 'none', border: 'none', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', fontWeight: 'bold' }
+  navBtn: { 
+    background: 'none', 
+    border: 'none', 
+    fontSize: '0.9rem', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    gap: '4px', 
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+    padding: '0.5rem',
+    borderRadius: '8px',
+    transform: 'scale(1)',
+  }
 }
 
 export default App;

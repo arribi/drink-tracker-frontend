@@ -16,17 +16,17 @@ export default function BacCard({ peso, sexo, bacEst, bacColor, tendencia, edad,
   if (isActive && bacAire > 0) {
     if (bacAire > 0.60) {
       legalAlert = {
-        message: `🚨 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al superar los 0.60 mg/L en aire aspirado te expones a un delito penal con posibles penas de cárcel.`,
+        message: `🚨 Tu tasa actual de es más de 0.60 mg/L en aire aspirado. Te expones a un delito penal con posibles penas de cárcel.`,
         className: styles.legalCriminal
       }
     } else if (bacAire >= 0.25) {
       legalAlert = {
-        message: `🛑 Tasa actual: ${bacAire.toFixed(2)} mg/L. Más de 0.25 mg/L en aire aspirado: te expones a una multa administrativa grave y pérdida de puntos.`,
+        message: `🛑 Tu tasa actual es más de 0.25 mg/L en aire aspirado. Te expones a una multa administrativa grave y pérdida de puntos.`,
         className: styles.legalAdministrative
       }
     } else {
       legalAlert = {
-        message: `🚗 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al bajar de 0.25 mg/L en aire aspirado puedes conducir, pero hazlo con cuidado.`,
+        message: `🚗 Tu tasa actual es menos de 0.25 mg/L en aire aspirado. Puedes conducir, pero hazlo con cuidado.`,
         className: styles.legalWarning
       }
     }
