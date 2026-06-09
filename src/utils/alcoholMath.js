@@ -7,6 +7,22 @@ const obtenerTasaEliminacion = (tolerancia) => {
   return 0.15; // normal (por defecto)
 };
 
+const TIEMPO_ABSORCION_MS = 45 * 60 * 1000;
+const MS_POR_HORA = 60 * 60 * 1000;
+
+const calcularFactorDistribucion = (peso, sexo, edad = 0, altura = 0) => {
+  if (edad > 0 && altura > 0) {
+    const tbw = sexo === 'H'
+      ? 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso)
+      : -2.097 + (0.1069 * altura) + (0.2466 * peso);
+
+    return 0.80 / tbw;
+  }
+
+  const r = sexo === 'M' ? 0.55 : 0.68;
+  return 1 / (peso * r);
+};
+
 export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0, tolerancia = 'normal') => {
   if (!peso || !sexo) return 40;
 
@@ -30,39 +46,51 @@ export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0, tolerancia 
 export const calcularBacEst = (history, peso, sexo, edad = 0, altura = 0, tolerancia = 'normal', customAhora = null) => {
   if (!history || history.length === 0 || !peso || !sexo) return 0;
 
-  const ahora = customAhora || Date.now();
-  const primeraBebidaMs = history[0].id;
-  const horasTranscurridas = Math.max(0, (ahora - primeraBebidaMs) / (1000 * 60 * 60));
-
-  let gramosAbsorbidosTotales = 0;
-  const TIEMPO_ABSORCION_MS = 45 * 60 * 1000;
-
-  history.forEach(drink => {
-    const tiempoDesdeQueSurgioMs = ahora - drink.id;
-    const gramosTotalesDeEstaBebida = drink.ubes * 10;
-
-    if (tiempoDesdeQueSurgioMs >= TIEMPO_ABSORCION_MS) {
-      gramosAbsorbidosTotales += gramosTotalesDeEstaBebida;
-    } else if (tiempoDesdeQueSurgioMs > 0) {
-      const fraccionAbsorbida = tiempoDesdeQueSurgioMs / TIEMPO_ABSORCION_MS;
-      gramosAbsorbidosTotales += gramosTotalesDeEstaBebida * fraccionAbsorbida;
-    }
-  });
-
+  const ahora = customAhora ?? Date.now();
   const tasa = obtenerTasaEliminacion(tolerancia);
+  const factorDistribucion = calcularFactorDistribucion(peso, sexo, edad, altura);
+  const bebidasPasadas = history.filter(drink => drink.id <= ahora);
 
-  if (edad > 0 && altura > 0) {
-    const tbw = sexo === 'H'
-      ? 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso)
-      : -2.097 + (0.1069 * altura) + (0.2466 * peso);
-
-    const calculo = (gramosAbsorbidosTotales * 0.80 / tbw) - (tasa * horasTranscurridas);
-    return Math.max(0, calculo);
+  if (bebidasPasadas.length === 0) {
+    return 0;
   }
 
-  const r = sexo === 'M' ? 0.55 : 0.68;
-  const calculo = (gramosAbsorbidosTotales / (peso * r)) - (tasa * horasTranscurridas);
-  return Math.max(0, calculo);
+  const puntosDeCambio = new Set([Math.min(...bebidasPasadas.map(drink => drink.id)), ahora]);
+
+  bebidasPasadas.forEach((drink) => {
+    puntosDeCambio.add(drink.id);
+    puntosDeCambio.add(Math.min(drink.id + TIEMPO_ABSORCION_MS, ahora));
+  });
+
+  const tiempos = [...puntosDeCambio].sort((a, b) => a - b);
+  let bac = 0;
+
+  for (let i = 0; i < tiempos.length - 1; i += 1) {
+    const inicio = tiempos[i];
+    const fin = tiempos[i + 1];
+    const duracionMs = fin - inicio;
+
+    if (duracionMs <= 0) continue;
+
+    const gramosAbsorbidosEnTramo = bebidasPasadas.reduce((total, drink) => {
+      const inicioAbsorcion = Math.max(inicio, drink.id);
+      const finAbsorcion = Math.min(fin, drink.id + TIEMPO_ABSORCION_MS);
+
+      if (finAbsorcion <= inicioAbsorcion) {
+        return total;
+      }
+
+      const gramosBebida = (drink.ubes || 1) * 10;
+      const fraccionAbsorbida = (finAbsorcion - inicioAbsorcion) / TIEMPO_ABSORCION_MS;
+      return total + (gramosBebida * fraccionAbsorbida);
+    }, 0);
+
+    const bacAbsorbido = gramosAbsorbidosEnTramo * factorDistribucion;
+    const bacEliminado = tasa * (duracionMs / MS_POR_HORA);
+    bac = Math.max(0, bac + bacAbsorbido - bacEliminado);
+  }
+
+  return bac;
 };
 
 export const calcularTendenciaBac = (history, peso, sexo, edad = 0, altura = 0, tolerancia = 'normal') => {
