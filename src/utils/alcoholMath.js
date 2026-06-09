@@ -106,9 +106,47 @@ export const calcularTendenciaBac = (history, peso, sexo, edad = 0, altura = 0, 
   return 'estable';
 };
 
-export const obtenerDiagnosticoResaca = (totalUbes) => {
+export const obtenerDiagnosticoResaca = (
+  history,
+  totalUbes,
+  peso,
+  sexo
+) => {
   if (totalUbes === 0) return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
-  if (totalUbes <= 3) return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
-  if (totalUbes <= 7) return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
+
+  // 1. Calcular duración del consumo (mínimo 1 hora para evitar distorsiones)
+  let duracionConsumoHoras = 1;
+  if (history && history.length > 1) {
+    const primeraDrink = Math.min(...history.map(d => d.id));
+    const ultimaDrink = Math.max(...history.map(d => d.id));
+    duracionConsumoHoras = Math.max(1, (ultimaDrink - primeraDrink) / (1000 * 60 * 60));
+  }
+
+  // 2. Extraer UBEs por hora
+  const ritmoConsumo = totalUbes / duracionConsumoHoras;
+
+  // 3. Modificador de velocidad
+  let factorRitmo = 1;
+  if (ritmoConsumo > 3) factorRitmo = 1.4;
+  else if (ritmoConsumo > 1.5) factorRitmo = 1.2;
+  else if (ritmoConsumo < 0.8) factorRitmo = 0.8;
+
+  // 4. Modificador de complexión (volumen de distribución hídrica)
+  const r = sexo === 'M' ? 0.55 : 0.68;
+  const masaCorporalAjustada = (peso || 70) * r;
+  const factorComplexion = 45 / masaCorporalAjustada; // 45 es la base estándar (70kg varón aprox)
+
+  // 5. Cálculo del Índice de Riesgo Neto
+  const indiceRiesgo = totalUbes * factorRitmo * factorComplexion;
+
+  if (indiceRiesgo < 3.5) {
+    return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
+  }
+  if (indiceRiesgo < 6.5) {
+    return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
+  }
+  if (indiceRiesgo < 9.5) {
+    return { texto: 'Riesgo elevado de resaca. Prepárate: ibuprofeno y mucha agua. 🤕', color: '#ea580c' };
+  }
   return { texto: 'Peligro de resaca histórica. Ve buscando un ibuprofeno y mucha agua. 💀', color: '#ef4444' };
 };
