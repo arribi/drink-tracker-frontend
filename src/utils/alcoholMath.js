@@ -13,12 +13,9 @@ export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0, tolerancia 
   const tasa = obtenerTasaEliminacion(tolerancia);
 
   if (edad > 0 && altura > 0) {
-    let tbw = 0;
-    if (sexo === 'H') {
-      tbw = 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso);
-    } else {
-      tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
-    }
+    const tbw = sexo === 'H'
+      ? 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso)
+      : -2.097 + (0.1069 * altura) + (0.2466 * peso);
 
     const mins = (8 / (tbw * tasa)) * 60;
     return Math.round(mins);
@@ -30,7 +27,7 @@ export const calcularMinsPerUbe = (peso, sexo, edad = 0, altura = 0, tolerancia 
   return Math.round(mins);
 };
 
-export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, tolerancia = 'normal', customAhora = null) => {
+export const calcularBacEst = (history, peso, sexo, edad = 0, altura = 0, tolerancia = 'normal', customAhora = null) => {
   if (!history || history.length === 0 || !peso || !sexo) return 0;
 
   const ahora = customAhora || Date.now();
@@ -55,12 +52,9 @@ export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura
   const tasa = obtenerTasaEliminacion(tolerancia);
 
   if (edad > 0 && altura > 0) {
-    let tbw = 0;
-    if (sexo === 'H') {
-      tbw = 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso);
-    } else {
-      tbw = -2.097 + (0.1069 * altura) + (0.2466 * peso);
-    }
+    const tbw = sexo === 'H'
+      ? 2.447 - (0.09156 * edad) + (0.1074 * altura) + (0.3362 * peso)
+      : -2.097 + (0.1069 * altura) + (0.2466 * peso);
 
     const calculo = (gramosAbsorbidosTotales * 0.80 / tbw) - (tasa * horasTranscurridas);
     return Math.max(0, calculo);
@@ -71,11 +65,11 @@ export const calcularBacEst = (history, peso, sexo, minsPerUbe, edad = 0, altura
   return Math.max(0, calculo);
 };
 
-export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe, edad = 0, altura = 0, tolerancia = 'normal') => {
+export const calcularTendenciaBac = (history, peso, sexo, edad = 0, altura = 0, tolerancia = 'normal') => {
   if (!history || history.length === 0 || !peso || !sexo) return 'estable';
 
-  const bacActual = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia, Date.now());
-  const bacFuturo = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia, Date.now() + 60000);
+  const bacActual = calcularBacEst(history, peso, sexo, edad, altura, tolerancia, Date.now());
+  const bacFuturo = calcularBacEst(history, peso, sexo, edad, altura, tolerancia, Date.now() + 60000);
 
   if (bacActual === 0 && bacFuturo === 0) return 'estable';
   if (bacFuturo > bacActual) return 'subiendo';
@@ -84,7 +78,7 @@ export const calcularTendenciaBac = (history, peso, sexo, minsPerUbe, edad = 0, 
   return 'estable';
 };
 
-export const obtenerDiagnosticoResaca = (history, totalUbes, minsPerUbe) => {
+export const obtenerDiagnosticoResaca = (totalUbes) => {
   if (totalUbes === 0) return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
   if (totalUbes <= 3) return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
   if (totalUbes <= 7) return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
