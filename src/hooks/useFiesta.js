@@ -17,10 +17,31 @@ const lanzarNotificacionViaLibre = () => {
   }
 }
 
+const obtenerHistorialInicial = () => {
+  let savedHistory = JSON.parse(localStorage.getItem('historial_bebidas') || '[]')
+
+  // AUTO-RESET: Limpieza automática tras 12 horas de inactividad
+  if (savedHistory.length > 0) {
+    const ultimaBebidaMs = savedHistory[savedHistory.length - 1].id
+    const doceHorasEnMs = 12 * 60 * 60 * 1000
+    const targetTime = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
+    const ahora = Date.now()
+
+    if (ahora > targetTime && (ahora - ultimaBebidaMs) > doceHorasEnMs) {
+      localStorage.removeItem('hora_objetivo')
+      localStorage.removeItem('historial_bebidas')
+      localStorage.removeItem('fiesta_terminada')
+      savedHistory = []
+    }
+  }
+
+  return savedHistory
+}
+
 export const useFiesta = () => {
   const [timeLeft, setTimeLeft] = useState(0)
   const [isActive, setIsActive] = useState(false)
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(obtenerHistorialInicial)
   const [showSummary, setShowSummary] = useState(localStorage.getItem('fiesta_terminada') === 'true')
 
   // Datos del perfil físico almacenados localmente
@@ -54,28 +75,13 @@ export const useFiesta = () => {
    * 🔄 Efecto inicial que arranca el segundero y gestiona el auto-reset
    */
   useEffect(() => {
-    let savedHistory = JSON.parse(localStorage.getItem('historial_bebidas') || '[]')
-
-    // AUTO-RESET: Limpieza automática tras 12 horas de inactividad
-    if (savedHistory.length > 0) {
-      const ultimaBebidaMs = savedHistory[savedHistory.length - 1].id
-      const doceHorasEnMs = 12 * 60 * 60 * 1000
-      const targetTime = parseInt(localStorage.getItem('hora_objetivo') || '0', 10)
-      const ahora = Date.now()
-
-      if (ahora > targetTime && (ahora - ultimaBebidaMs) > doceHorasEnMs) {
-        localStorage.removeItem('hora_objetivo')
-        localStorage.removeItem('historial_bebidas')
-        localStorage.removeItem('fiesta_terminada')
-        savedHistory = []
-      }
-    }
-
-    setHistory(savedHistory)
-    calculateTimeLeft()
+    const initialCheck = setTimeout(calculateTimeLeft, 0)
 
     const timer = setInterval(calculateTimeLeft, 1000)
-    return () => clearInterval(timer)
+    return () => {
+      clearTimeout(initialCheck)
+      clearInterval(timer)
+    }
   }, [calculateTimeLeft])
 
   /**

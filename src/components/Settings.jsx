@@ -2,30 +2,18 @@ import { useState, useEffect } from 'react'
 import styles from './Settings.module.css'
 
 export default function Settings() {
-  const [intervaloHoras, setIntervaloHoras] = useState('2')
-  const [peso, setPeso] = useState('')
-  const [sexo, setSexo] = useState('')
-  const [edad, setEdad] = useState('')
-  const [altura, setAltura] = useState('')
-  const [tolerancia, setTolerancia] = useState('normal')
+  const [intervaloHoras, setIntervaloHoras] = useState(() => localStorage.getItem('intervalo_horas') || '2')
+  const [peso, setPeso] = useState(() => localStorage.getItem('usuario_peso') || '')
+  const [sexo, setSexo] = useState(() => localStorage.getItem('usuario_sexo') || '')
+  const [edad, setEdad] = useState(() => localStorage.getItem('usuario_edad') || '')
+  const [altura, setAltura] = useState(() => localStorage.getItem('usuario_altura') || '')
+  const [tolerancia, setTolerancia] = useState(() => localStorage.getItem('usuario_tolerancia') || 'normal')
 
   useEffect(() => {
     localStorage.removeItem('intervalo_minutos')
-    const valorHoras = localStorage.getItem('intervalo_horas')
-    if (valorHoras) setIntervaloHoras(valorHoras)
-    else localStorage.setItem('intervalo_horas', '2')
-
-    const valorPeso = localStorage.getItem('usuario_peso')
-    const valorSexo = localStorage.getItem('usuario_sexo')
-    const valorEdad = localStorage.getItem('usuario_edad')
-    const valorAltura = localStorage.getItem('usuario_altura')
-    const valorTolerancia = localStorage.getItem('usuario_tolerancia')
-
-    if (valorPeso) setPeso(valorPeso)
-    if (valorSexo) setSexo(valorSexo)
-    if (valorEdad) setEdad(valorEdad)
-    if (valorAltura) setAltura(valorAltura)
-    if (valorTolerancia) setTolerancia(valorTolerancia)
+    if (!localStorage.getItem('intervalo_horas')) {
+      localStorage.setItem('intervalo_horas', '2')
+    }
   }, [])
 
   const handleHorasChange = async (e) => {

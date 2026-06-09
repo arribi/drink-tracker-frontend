@@ -6,7 +6,7 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       data = event.data.json();
-    } catch (e) {
+    } catch {
       data.body = event.data.text();
     }
   }
@@ -34,6 +34,6 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   // Abre la app o la enfoca si ya está abierta
   event.waitUntil(
-    clients.openWindow('/')
+    self.clients.openWindow('/')
   );
 });
