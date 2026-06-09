@@ -61,30 +61,7 @@ export default function Dashboard() {
   // El color general cambia según los límites de aire (0.60 y 0.25)
   const bacColor = bacAire >= 0.60 ? '#ef4444' : bacAire >= 0.25 ? '#eab308' : '#22c55e'
 
-  // --- 🚦 LÓGICA DE AVISOS LEGALES EN AIRE ASPIRADO (mg/L) ---
-  let legalAlert = {
-    message: '💚 ¡Hígado libre! Estado óptimo.',
-    className: styles.legalSafe
-  }
 
-  if (isActive && bacAire > 0) {
-    if (bacAire > 0.60) {
-      legalAlert = {
-        message: `🚨 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al superar los 0.60 mg/L en aire aspirado te expones a un delito penal con posibles penas de cárcel.`,
-        className: styles.legalCriminal
-      }
-    } else if (bacAire >= 0.25) {
-      legalAlert = {
-        message: `🛑 Tasa actual: ${bacAire.toFixed(2)} mg/L. Más de 0.25 mg/L en aire aspirado: te expones a una multa administrativa grave y pérdida de puntos.`,
-        className: styles.legalAdministrative
-      }
-    } else {
-      legalAlert = {
-        message: `🚗 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al bajar de 0.25 mg/L en aire aspirado puedes conducir, pero hazlo con cuidado.`,
-        className: styles.legalWarning
-      }
-    }
-  }
 
   // Si la fiesta terminó, mostramos solo la pantalla de resumen
   if (showSummary) {
@@ -115,11 +92,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* BANNER DE ADVERTENCIA LEGAL DINÁMICO */}
-      <div className={legalAlert.className}>
-        {legalAlert.message}
-      </div>
-
       {/* TARJETA BLANCA PARA EL TEMPORIZADOR */}
       <div className={styles.timerCardWrapper}>
         <TimerCircle
@@ -143,6 +115,8 @@ export default function Dashboard() {
             tendencia={tendenciaBac}
             edad={edad}
             altura={altura}
+            isActive={isActive}
+            bacAire={bacAire}
           />
 
           <HistoryList
