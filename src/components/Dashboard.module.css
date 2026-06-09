@@ -4,7 +4,7 @@
   max-width: 500px;
   margin: 0 auto;
   padding: 1.5rem;
-  background-color: #f8fafc; /* Fondo suave */
+  background-color: #f8fafc;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -23,6 +23,24 @@
 }
 .statusDot { width: 12px; height: 12px; border-radius: 50%; transition: background-color 0.3s ease; }
 
+/* --- 🌟 BANNERS DE ADVERTENCIA LEGAL --- */
+.legalSafe, .legalWarning, .legalAdministrative, .legalCriminal {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: 1px solid transparent;
+}
+.legalSafe { background-color: #f0fdf4; color: #16a34a; border-color: #dcfce7; }
+.legalWarning { background-color: #fefce8; color: #ca8a04; border-color: #fef9c3; }
+.legalAdministrative { background-color: #fff7ed; color: #ea580c; border-color: #ffedd5; }
+.legalCriminal { background-color: #fef2f2; color: #dc2626; border-color: #fee2e2; }
+
 /* --- CONTENEDOR DEL TEMPORIZADOR --- */
 .timerCardWrapper {
   background: #ffffff; border-radius: 20px; padding: 2rem 1.5rem;
@@ -30,7 +48,7 @@
   display: flex; justify-content: center; align-items: center; width: 100%; box-sizing: border-box;
 }
 
-/* --- CÍRCULO DEL TEMPORIZADOR DINÁMICO (Tus clases originales) --- */
+/* --- CÍRCULO DEL TEMPORIZADOR DINÁMICO --- */
 .circle {
   position: relative; width: 220px; height: 220px; border-radius: 50%; border: none; 
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -57,10 +75,8 @@
 .timerText { font-size: 3.2rem; font-weight: bold; margin: 0; color: #1f2937; font-variant-numeric: tabular-nums; }
 .timerLabel { color: #6b7280; margin-top: 0.5rem; }
 
-/* --- BOTONES DE BEBIDAS (Tus clases originales, diseño mejorado) --- */
-.gridContainer {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; width: 100%;
-}
+/* --- BOTONES DE BEBIDAS --- */
+.gridContainer { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; width: 100%; }
 .drinkButton {
   display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
   gap: 0.4rem; padding: 1.25rem 1rem; color: white; border: none; border-radius: 16px;

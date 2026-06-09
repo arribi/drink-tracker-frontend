@@ -2,7 +2,7 @@ import styles from './Dashboard.module.css'
 import { useFiesta } from '../hooks/useFiesta'
 import { calcularMinsPerUbe, calcularBacEst, obtenerDiagnosticoResaca, calcularTendenciaBac } from '../utils/alcoholMath'
 
-// Importamos nuestros nuevos "bloques de Lego"
+// Importamos nuestros bloques de componentes
 import TimerCircle from './TimerCircle'
 import DrinkGrid from './DrinkGrid'
 import BacCard from './BacCard'
@@ -30,14 +30,12 @@ export default function Dashboard() {
     const totalSeconds = Math.floor(ms / 1000)
     const totalMinutes = Math.floor(totalSeconds / 60)
 
-    // Si sobrepasa la hora, formateamos en Horas y Minutos
     if (totalMinutes >= 60) {
       const hours = Math.floor(totalMinutes / 60)
       const minutes = totalMinutes % 60
       return `${hours}h ${minutes}m`
     }
 
-    // Si es menos de una hora, dejamos el MM:SS clásico para ver los segundos bajar
     const seconds = totalSeconds % 60
     return `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
@@ -46,9 +44,12 @@ export default function Dashboard() {
   const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura, tolerancia)
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
   const diagnostico = obtenerDiagnosticoResaca(history, totalUbesConsumidas, minsPerUbe)
-  const bacEst = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia)
+
+  const bacEst = calcularBacEst(history, peso, sexo, minsPerUbe, edad, altura, tolerancia) // g/L en sangre
   const tendenciaBac = calcularTendenciaBac(history, peso, sexo, minsPerUbe, edad, altura, tolerancia)
 
+  // 🔄 CONVERSIÓN A AIRE ASPIRADO (mg/L)
+  const bacAire = bacEst * 0.5
 
   // --- VARIABLES VISUALES ---
   const porcentajeProgreso = isActive && totalUbesConsumidas > 0
@@ -56,7 +57,34 @@ export default function Dashboard() {
     : 100
   const ringColor = isActive ? '#f97316' : '#22c55e'
   const isPulsing = isActive && timeLeft > 0 && timeLeft <= 900000
-  const bacColor = bacEst >= 0.5 ? '#ef4444' : bacEst >= 0.25 ? '#eab308' : '#22c55e'
+
+  // El color general cambia según los límites de aire (0.60 y 0.25)
+  const bacColor = bacAire >= 0.60 ? '#ef4444' : bacAire >= 0.25 ? '#eab308' : '#22c55e'
+
+  // --- 🚦 LÓGICA DE AVISOS LEGALES EN AIRE ASPIRADO (mg/L) ---
+  let legalAlert = {
+    message: '💚 ¡Hígado libre! Estado óptimo.',
+    className: styles.legalSafe
+  }
+
+  if (isActive && bacAire > 0) {
+    if (bacAire > 0.60) {
+      legalAlert = {
+        message: `🚨 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al superar los 0.60 mg/L en aire aspirado te expones a un delito penal con posibles penas de cárcel.`,
+        className: styles.legalCriminal
+      }
+    } else if (bacAire >= 0.25) {
+      legalAlert = {
+        message: `🛑 Tasa actual: ${bacAire.toFixed(2)} mg/L. Más de 0.25 mg/L en aire aspirado: te expones a una multa administrativa grave y pérdida de puntos.`,
+        className: styles.legalAdministrative
+      }
+    } else {
+      legalAlert = {
+        message: `🚗 Tasa actual: ${bacAire.toFixed(2)} mg/L. Al bajar de 0.25 mg/L en aire aspirado puedes conducir, pero hazlo con cuidado.`,
+        className: styles.legalWarning
+      }
+    }
+  }
 
   // Si la fiesta terminó, mostramos solo la pantalla de resumen
   if (showSummary) {
@@ -76,9 +104,8 @@ export default function Dashboard() {
   return (
     <div className={styles.container}>
 
-      {/* 🌟 HEADER PREMIUM */}
+      {/* HEADER PREMIUM */}
       <header className={styles.header}>
-        <h1 className={styles.mainTitle}>Cero Resaca</h1>
         <div className={styles.statusBadge}>
           <div
             className={styles.statusDot}
@@ -88,7 +115,12 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* 🌟 TARJETA BLANCA PARA EL TEMPORIZADOR */}
+      {/* BANNER DE ADVERTENCIA LEGAL DINÁMICO */}
+      <div className={legalAlert.className}>
+        {legalAlert.message}
+      </div>
+
+      {/* TARJETA BLANCA PARA EL TEMPORIZADOR */}
       <div className={styles.timerCardWrapper}>
         <TimerCircle
           isActive={isActive}
