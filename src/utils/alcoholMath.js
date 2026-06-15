@@ -110,11 +110,17 @@ export const obtenerDiagnosticoResaca = (
   history,
   totalUbes,
   peso,
-  sexo
+  sexo,
+  edad = 0,
+  altura = 0,
+  tolerancia = 'normal'
 ) => {
   if (totalUbes === 0) return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
 
-  // 1. Calcular duración del consumo (mínimo 1 hora para evitar distorsiones)
+  // 1. Calcular BAC actual (indicador principal de resaca)
+  const bacActual = calcularBacEst(history, peso, sexo, edad, altura, tolerancia);
+
+  // 2. Calcular duración del consumo (factor secundario)
   let duracionConsumoHoras = 1;
   if (history && history.length > 1) {
     const primeraDrink = Math.min(...history.map(d => d.id));
@@ -122,30 +128,33 @@ export const obtenerDiagnosticoResaca = (
     duracionConsumoHoras = Math.max(1, (ultimaDrink - primeraDrink) / (1000 * 60 * 60));
   }
 
-  // 2. Extraer UBEs por hora
+  // 3. Calcular ritmo de consumo (UBEs por hora)
   const ritmoConsumo = totalUbes / duracionConsumoHoras;
 
-  // 3. Modificador de velocidad
+  // 4. Modificador por duración prolongada (desgaste físico)
+  let factorDuracion = 1;
+  if (duracionConsumoHoras > 6) factorDuracion = 1.3;
+  else if (duracionConsumoHoras > 4) factorDuracion = 1.15;
+
+  // 5. Modificador por ritmo muy acelerado
   let factorRitmo = 1;
-  if (ritmoConsumo > 3) factorRitmo = 1.4;
-  else if (ritmoConsumo > 1.5) factorRitmo = 1.2;
-  else if (ritmoConsumo < 0.8) factorRitmo = 0.8;
+  if (ritmoConsumo > 3) factorRitmo = 1.25;
+  else if (ritmoConsumo > 1.5) factorRitmo = 1.1;
 
-  // 4. Modificador de complexión (volumen de distribución hídrica)
-  const r = sexo === 'M' ? 0.55 : 0.68;
-  const masaCorporalAjustada = (peso || 70) * r;
-  const factorComplexion = 45 / masaCorporalAjustada; // 45 es la base estándar (70kg varón aprox)
+  // 6. Ajuste por BAC: el BAC actual es el mejor predictor de resaca
+  // Cada 0.01 de BAC equivale aproximadamente a un factor de riesgo
+  const indiceRiesgo = bacActual * 100 * factorDuracion * factorRitmo;
 
-  // 5. Cálculo del Índice de Riesgo Neto
-  const indiceRiesgo = totalUbes * factorRitmo * factorComplexion;
-
-  if (indiceRiesgo < 3.5) {
+  if (indiceRiesgo < 2) {
+    return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
+  }
+  if (indiceRiesgo < 4) {
     return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
   }
-  if (indiceRiesgo < 6.5) {
+  if (indiceRiesgo < 7) {
     return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
   }
-  if (indiceRiesgo < 9.5) {
+  if (indiceRiesgo < 11) {
     return { texto: 'Riesgo elevado de resaca. Prepárate: ibuprofeno y mucha agua. 🤕', color: '#ea580c' };
   }
   return { texto: 'Peligro de resaca histórica. Ve buscando un ibuprofeno y mucha agua. 💀', color: '#ef4444' };

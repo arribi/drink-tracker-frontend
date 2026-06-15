@@ -43,7 +43,7 @@ export default function Dashboard() {
   // --- CÁLCULOS MATEMÁTICOS RÁPIDOS ---
   const minsPerUbe = calcularMinsPerUbe(peso, sexo, edad, altura, tolerancia)
   const totalUbesConsumidas = history.reduce((acc, drink) => acc + (drink.ubes || 1), 0)
-  const diagnostico = obtenerDiagnosticoResaca(history, totalUbesConsumidas, peso, sexo)
+  const diagnostico = obtenerDiagnosticoResaca(history, totalUbesConsumidas, peso, sexo, edad, altura, tolerancia)
 
   const bacEst = calcularBacEst(history, peso, sexo, edad, altura, tolerancia) // g/L en sangre
   const tendenciaBac = calcularTendenciaBac(history, peso, sexo, edad, altura, tolerancia)
