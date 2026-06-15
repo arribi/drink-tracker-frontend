@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import styles from './Settings.module.css'
 
 export default function Settings() {
@@ -27,13 +28,22 @@ export default function Settings() {
         const suscripcionExistente = await registro.pushManager.getSubscription()
 
         if (suscripcionExistente) {
-          const respuesta = await fetch(`${import.meta.env.VITE_BACKEND_URL}/update-interval`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint: suscripcionExistente.endpoint, intervalo: nuevoValor })
-          })
-          const datos = await respuesta.json()
-          console.log('Sincronización de agua:', datos.mensaje)
+          toast.promise(
+            fetch(`${import.meta.env.VITE_BACKEND_URL}/update-interval`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ endpoint: suscripcionExistente.endpoint, intervalo: nuevoValor })
+            }).then(async (respuesta) => {
+              const datos = await respuesta.json()
+              console.log('Sincronización de agua:', datos.mensaje)
+              return datos
+            }),
+            {
+              loading: 'Actualizando frecuencia...',
+              success: 'Frecuencia actualizada ✓',
+              error: 'Error al actualizar frecuencia'
+            }
+          )
         }
       } catch (error) {
         console.error('Error push agua:', error)
@@ -96,7 +106,7 @@ export default function Settings() {
           <span>Frecuencia de las alertas</span>
           <select value={intervaloHoras} onChange={handleHorasChange} className={styles.select}>
             <option value="1">Cada 1 hora</option>
-            <option value="2">Cada 2 horas (Recomendado)</option>
+            <option value="2">Cada 2 horas (por defecto)</option>
             <option value="3">Cada 3 horas</option>
             <option value="4">Cada 4 horas</option>
           </select>

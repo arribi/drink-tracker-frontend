@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Toaster, toast } from 'sonner'
 import Dashboard from './components/Dashboard'
 import Settings from './components/Settings'
 import './App.css'
@@ -36,7 +37,7 @@ function App() {
       // A. Pedir permiso nativo al usuario
       const permiso = await Notification.requestPermission();
       if (permiso !== 'granted') {
-        alert('¡Ups! Has denegado el permiso de notificaciones.');
+        toast.error('¡Ups! Has denegado el permiso de notificaciones.');
         return;
       }
 
@@ -52,30 +53,36 @@ function App() {
       console.log('Suscripción generada en el navegador:', suscripcion);
 
       // Enviar el JSON directo al backend en Node (Puerto 3000)
-      const respuesta = await fetch(`${import.meta.env.VITE_BACKEND_URL}/subscribe`, {
-        method: 'POST',
-        body: JSON.stringify(suscripcion),
-        headers: {
-          'Content-Type': 'application/json'
+      toast.promise(
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/subscribe`, {
+          method: 'POST',
+          body: JSON.stringify(suscripcion),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(async (respuesta) => {
+          const datos = await respuesta.json();
+          console.log('Respuesta del backend:', datos);
+          localStorage.setItem('isNotificationsSubscribed', 'true')
+          setIsSubscribed(true)
+          return datos;
+        }),
+        {
+          loading: 'Vinculando dispositivo...',
+          success: '¡Dispositivo vinculado con éxito en MongoDB! 🔔',
+          error: 'Error al guardar la suscripción'
         }
-      });
-
-      const datos = await respuesta.json();
-      console.log('Respuesta del backend:', datos);
-      
-      // Guardar estado y actualizar UI
-      localStorage.setItem('isNotificationsSubscribed', 'true')
-      setIsSubscribed(true)
-      alert('¡Dispositivo vinculado con éxito en MongoDB! 🔔');
+      );
 
     } catch (error) {
       console.error('Error al suscribir al usuario:', error);
-      alert('Hubo un error al activar las notificaciones.');
+      toast.error('Hubo un error al activar las notificaciones.');
     }
   };
 
   return (
     <div style={styles.appShell}>
+      <Toaster position="top-center" />
       {/* Cabecera */}
       <header style={styles.header}>
         <h1>Drink Tracker</h1>
