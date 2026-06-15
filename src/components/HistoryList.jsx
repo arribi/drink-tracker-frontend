@@ -5,7 +5,7 @@ export default function HistoryList({ history, handleUndoLastDrink, handleEndPar
 
   return (
     <div className={styles.historySection}>
-      <h3>Llevas {history.length} {history.length === 1 ? 'bebida' : 'bebidas'} anoche:</h3>
+      <h3>Llevas {history.length} {history.length === 1 ? 'bebida' : 'bebidas'} :</h3>
       <ul className={styles.list}>
         {history.map((drink) => (
           <li key={drink.id} className={styles.listItem}>

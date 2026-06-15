@@ -146,16 +146,17 @@ export const obtenerDiagnosticoResaca = (
   const indiceRiesgo = bacActual * 100 * factorDuracion * factorRitmo;
 
   if (indiceRiesgo < 2) {
-    return { texto: '¡Cuerpo limpio! Disfruta del día. ☀️', color: '#22c55e' };
+    return { texto: '¡Cuerpo limpio! Eres el conductor asignado o un santo. Disfruta del día sin remordimientos. ☀️👼', color: '#22c55e' };
   }
   if (indiceRiesgo < 4) {
-    return { texto: 'Consumo moderado. Mañana estarás como una rosa si bebes agua. 🌹', color: '#eab308' };
+    return { texto: 'Consumo moderado. Un par de vasos de agua antes de dormir y mañana reinicias el día como si nada. 🌹😎', color: '#eab308' };
   }
   if (indiceRiesgo < 7) {
-    return { texto: 'Zona de riesgo. Mañana la cabeza te va a recordar esta noche. 🦫', color: '#f97316' };
+    return { texto: 'Zona de peligro. Mañana tu cabeza va a albergar un concierto de heavy metal. Ve pidiendo perdón a tu hígado. 🦫🎸', color: '#f97316' };
   }
   if (indiceRiesgo < 11) {
-    return { texto: 'Riesgo elevado de resaca. Prepárate: ibuprofeno y mucha agua. 🤕', color: '#ea580c' };
+    return { texto: 'Riesgo elevado. Estás a un paso de prometer "no volver a beber nunca más". Deja un ibuprofeno y agua en la mesita ya. 🤕🛒', color: '#ea580c' };
   }
-  return { texto: 'Peligro de resaca histórica. Ve buscando un ibuprofeno y mucha agua. 💀', color: '#ef4444' };
+  return { texto: '🚨 RESACA HISTÓRICA DETECTADA 🚨 Mañana no vas a ser persona, vas a ser un meme ambulante. Que Dios se apiade de tu alma (y de tu estómago). 💀🛌', color: '#ef4444' };
 };
+

@@ -179,7 +179,7 @@ export const useFiesta = () => {
   }
 
   /**
-   * 🏁 Da por terminada la noche de fiesta y congela el estado para el resumen
+   * 🏁 Da por terminada la fiesta y congela el estado para el resumen
    */
   const handleEndParty = () => {
     setShowSummary(true)
