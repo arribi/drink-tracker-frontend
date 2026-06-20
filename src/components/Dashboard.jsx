@@ -88,7 +88,7 @@ export default function Dashboard() {
             className={styles.statusDot}
             style={{ backgroundColor: isActive ? '#f97316' : '#4ade80' }}
           />
-          <span>{isActive ? 'En proceso' : 'Vía libre'}</span>
+          <span>{isActive ? 'Hígado trabajando' : 'Vía libre'}</span>
         </div>
       </header>
 
