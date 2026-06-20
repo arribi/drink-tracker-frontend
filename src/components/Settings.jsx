@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import styles from './Settings.module.css'
 
 export default function Settings() {
-  const [intervaloHoras, setIntervaloHoras] = useState(() => localStorage.getItem('intervalo_horas') || '2')
+  const [intervaloHoras, setIntervaloHoras] = useState(() => localStorage.getItem('intervalo_horas') || '1')
   const [peso, setPeso] = useState(() => localStorage.getItem('usuario_peso') || '')
   const [sexo, setSexo] = useState(() => localStorage.getItem('usuario_sexo') || '')
   const [edad, setEdad] = useState(() => localStorage.getItem('usuario_edad') || '')
@@ -13,7 +13,7 @@ export default function Settings() {
   useEffect(() => {
     localStorage.removeItem('intervalo_minutos')
     if (!localStorage.getItem('intervalo_horas')) {
-      localStorage.setItem('intervalo_horas', '2')
+      localStorage.setItem('intervalo_horas', '1')
     }
   }, [])
 
@@ -105,8 +105,8 @@ export default function Settings() {
         <label className={styles.label}>
           <span>Frecuencia de las alertas</span>
           <select value={intervaloHoras} onChange={handleHorasChange} className={styles.select}>
-            <option value="1">Cada 1 hora</option>
-            <option value="2">Cada 2 horas (por defecto)</option>
+            <option value="1">Cada 1 hora (por defecto)</option>
+            <option value="2">Cada 2 horas</option>
             <option value="3">Cada 3 horas</option>
             <option value="4">Cada 4 horas</option>
           </select>
