@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
 import { calcularMinsPerUbe } from '../utils/alcoholMath'
 
 /**
@@ -108,6 +109,11 @@ export const useFiesta = () => {
     const updatedHistory = [...history, newDrink]
     setHistory(updatedHistory)
     localStorage.setItem('historial_bebidas', JSON.stringify(updatedHistory))
+
+    toast.success(`✅ ${nombreBebida} añadida`, {
+      description: 'Tu metabolismo ya está trabajando en ello.',
+      duration: 3000,
+    })
 
     calculateTimeLeft()
 
